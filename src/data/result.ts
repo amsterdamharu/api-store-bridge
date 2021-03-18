@@ -14,6 +14,7 @@ export const AVAILABLE = {
 };
 export const NOT_REQUESTED = {
   ...LOADING,
+  loading: false,
   requested: false,
 };
 export type Result<T> = {
