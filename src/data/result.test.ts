@@ -16,13 +16,14 @@ test("is result", () => {
 });
 test("as result", () => {
   expect(asResult(22)).toEqual({ ...AVAILABLE, value: 22 });
-  expect(LOADING).toBe(LOADING);
-  expect(AVAILABLE).toBe(AVAILABLE);
+  expect(asResult(LOADING)).toBe(LOADING);
+  expect(asResult(AVAILABLE)).toBe(AVAILABLE);
 });
 test("is available", () => {
   expect(isAvailable(LOADING)).toBe(false);
   expect(isAvailable(AVAILABLE)).toBe(true);
   expect(isAvailable(ERROR)).toBe(false);
+  expect(isAvailable(NOT_REQUESTED)).toBe(false);
 });
 test("pick unavailable", () => {
   //pick most important unavailable result
