@@ -1,10 +1,14 @@
-//selectors (needs stringFromQuery and getId)
-//reducer
-//returns action types, action creators, thunk actions
-//container that passes props
-// not react just call component with Component(props)
+//reducer for multiple entity query
+//thunk action (external fetch)
+//no container that passes props, you should make it yourself
+// so it is not react specific
 
-import { mapResults, NOT_REQUESTED } from "./result";
+import {
+  AVAILABLE,
+  LOADING,
+  mapResults,
+  NOT_REQUESTED,
+} from "./result";
 
 //should have no react no redux, only reselect
 interface Id {
@@ -18,19 +22,42 @@ interface Arg {
     arg0: string,
     callback: any
   ) => (...args: any[]) => any;
+  entityName: string;
 }
 const selectPath = (path: string[], state: any): any =>
   path.length === 0
     ? state
     : selectPath(path.slice(1), state[path[0]]);
+export function set(
+  path: string[],
+  state: any,
+  callback: any
+): any {
+  if (path.length === 1) {
+    return {
+      ...state,
+      [path[0]]: callback(state[path[0]]),
+    };
+  }
+  const current: any = state[path[0]];
+  return {
+    ...state,
+    [path[0]]: {
+      ...current,
+      ...set(path.slice(1), current, callback),
+    },
+  };
+}
 export const CREATE_SELECTOR = "CREATE_SELECTOR";
+export const REDUCER = "REDUCER";
 const createBridge = ({
+  entityName,
   getId = ({ id }: Id) => id,
   path = [],
   queryToString = (query) => JSON.stringify(query),
   override = (_type, callback) => (...args) =>
     callback(...args),
-}: Arg = {}) => {
+}: Arg) => {
   const createSelectResult = override(
     CREATE_SELECTOR,
     (query: any) => (state: any) => {
@@ -53,8 +80,72 @@ const createBridge = ({
       );
     }
   );
+  const REQUESTED = `${entityName.toUpperCase()}_REQUESTED`;
+  const SUCCEEDED = `${entityName.toUpperCase()}_SUCCEEDED`;
+  const FAILED = `${entityName.toUpperCase()}_FAILED`;
+  const reducer = override(
+    REDUCER,
+    (
+      state: any,
+      { type, payload }: { type: string; payload: any }
+    ) => {
+      const { query } = payload;
+      const id = getId(query);
+      if (type === REQUESTED && id) {
+        return set(
+          path.concat("data"),
+          state,
+          (data: any) => ({
+            ...data,
+            [id]: LOADING,
+          })
+        );
+      }
+      if (type === FAILED && id) {
+        return set(
+          path.concat("data"),
+          state,
+          (data: any) => ({
+            ...data,
+            [id]: { ...AVAILABLE, error: payload.error },
+          })
+        );
+      }
+      if (type === SUCCEEDED && id) {
+        return set(
+          path.concat("data"),
+          state,
+          (data: any) => ({
+            ...data,
+            [id]: { ...AVAILABLE, value: payload.data },
+          })
+        );
+      }
+      return state;
+    }
+  );
   return {
     createSelectResult,
+    reducer,
+    actionTypes: {
+      REQUESTED,
+      SUCCEEDED,
+      FAILED,
+    },
+    actions: {
+      requested: (query: any) => ({
+        type: REQUESTED,
+        payload: { query },
+      }),
+      succeeded: (query: any, data: any) => ({
+        type: SUCCEEDED,
+        payload: { query, data },
+      }),
+      failed: (query: any, error: any) => ({
+        type: FAILED,
+        payload: { query, error },
+      }),
+    },
   };
 };
 export default createBridge;
