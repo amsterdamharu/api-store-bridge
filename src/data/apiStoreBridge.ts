@@ -1,4 +1,5 @@
-//thunk action (external fetch)
+//reducer with page needs function to get data and meta from api result
+//test page reducer for requested, succeeded and failed
 //no container that passes props, you should make it yourself
 // so it is not react specific
 import {
@@ -114,6 +115,53 @@ const createBridge = ({
         (data: any) => ({
           ...data,
           [id]: { ...AVAILABLE, value: payload.data },
+        })
+      );
+    }
+    if (type === REQUESTED) {
+      return set(
+        path.concat("queries"),
+        state,
+        (queries: any) => ({
+          ...queries,
+          [queryToString(query)]: {
+            ...queries[queryToString(query)],
+            ...LOADING,
+          },
+        })
+      );
+    }
+    if (type === SUCCEEDED) {
+      return set(path, state, (entityState: any) => ({
+        ...entityState,
+        queries: {
+          ...entityState.queries,
+          [queryToString(query)]: asResult(
+            //@todo: need also meta data for paging
+            payload.data.map(getId)
+          ),
+        },
+        data: {
+          ...entityState.data,
+          ...Object.fromEntries(
+            payload.data.map((item: any) => [
+              [getId(item), asResult(item)],
+            ])
+          ),
+        },
+      }));
+    }
+    if (type === FAILED) {
+      return set(
+        path.concat("queries"),
+        state,
+        (queries: any) => ({
+          ...queries,
+          [queryToString(query)]: {
+            ...queries[queryToString(query)],
+            ...AVAILABLE,
+            error: payload.error,
+          },
         })
       );
     }
