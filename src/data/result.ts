@@ -85,3 +85,7 @@ export const promiseResults = (
   }
   return Promise.resolve(forcedResults.map(getValue));
 };
+export const isRequested = (result: any) =>
+  ((result.loading && result.requested) || //is requested
+    isAvailable(result)) && //is available
+  !Boolean(result.error); //has an error (request again)

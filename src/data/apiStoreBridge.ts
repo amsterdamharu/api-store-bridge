@@ -1,15 +1,15 @@
-//reducer for multiple entity query
 //thunk action (external fetch)
 //no container that passes props, you should make it yourself
 // so it is not react specific
-
 import {
   AVAILABLE,
+  isRequested,
   LOADING,
   mapResults,
+  asResult,
   NOT_REQUESTED,
 } from "./result";
-
+const windowFetch = fetch;
 //should have no react no redux, only reselect
 interface Id {
   id: string | number;
@@ -18,11 +18,9 @@ interface Arg {
   getId?: (arg0: Id) => string | number;
   path?: string[];
   queryToString?: (arg0: object) => string;
-  override?: (
-    arg0: string,
-    callback: any
-  ) => (...args: any[]) => any;
   entityName: string;
+  fetch?: any;
+  createFetchArgs: (arg0: object) => any[];
 }
 const selectPath = (path: string[], state: any): any =>
   path.length === 0
@@ -33,6 +31,9 @@ export function set(
   state: any,
   callback: any
 ): any {
+  if (path.length === 0) {
+    return callback(state);
+  }
   if (path.length === 1) {
     return {
       ...state,
@@ -48,104 +49,119 @@ export function set(
     },
   };
 }
-export const CREATE_SELECTOR = "CREATE_SELECTOR";
-export const REDUCER = "REDUCER";
 const createBridge = ({
   entityName,
   getId = ({ id }: Id) => id,
   path = [],
   queryToString = (query) => JSON.stringify(query),
-  override = (_type, callback) => (...args) =>
-    callback(...args),
+  fetch = windowFetch,
+  createFetchArgs,
 }: Arg) => {
-  const createSelectResult = override(
-    CREATE_SELECTOR,
-    (query: any) => (state: any) => {
-      if (getId(query)) {
-        return (
-          selectPath(path, state).data[getId(query)] ||
+  const createSelectResult = (query: any) => (
+    state: any
+  ) => {
+    if (getId(query)) {
+      return asResult(
+        selectPath(path, state).data[getId(query)] ||
           NOT_REQUESTED
-        );
-      }
-      return mapResults(
-        selectPath(path, state).queries[
-          queryToString(query)
-        ] || NOT_REQUESTED
-      )((ids: number[] | string[]) =>
-        mapResults(
-          ...ids.map(
-            (id: any) => state.data[id] || NOT_REQUESTED
-          )
-        )((...items: any[]) => items)
       );
     }
-  );
+    return mapResults(
+      selectPath(path, state).queries[
+        queryToString(query)
+      ] || NOT_REQUESTED
+    )((ids: number[] | string[]) =>
+      mapResults(
+        ...ids.map(
+          (id: any) => state.data[id] || NOT_REQUESTED
+        )
+      )((...items: any[]) => items)
+    );
+  };
   const REQUESTED = `${entityName.toUpperCase()}_REQUESTED`;
   const SUCCEEDED = `${entityName.toUpperCase()}_SUCCEEDED`;
   const FAILED = `${entityName.toUpperCase()}_FAILED`;
-  const reducer = override(
-    REDUCER,
-    (
-      state: any,
-      { type, payload }: { type: string; payload: any }
-    ) => {
-      const { query } = payload;
-      const id = getId(query);
-      if (type === REQUESTED && id) {
-        return set(
-          path.concat("data"),
-          state,
-          (data: any) => ({
-            ...data,
-            [id]: LOADING,
-          })
-        );
-      }
-      if (type === FAILED && id) {
-        return set(
-          path.concat("data"),
-          state,
-          (data: any) => ({
-            ...data,
-            [id]: { ...AVAILABLE, error: payload.error },
-          })
-        );
-      }
-      if (type === SUCCEEDED && id) {
-        return set(
-          path.concat("data"),
-          state,
-          (data: any) => ({
-            ...data,
-            [id]: { ...AVAILABLE, value: payload.data },
-          })
-        );
-      }
-      return state;
+  const reducer = (
+    state: any,
+    { type, payload }: { type: string; payload: any }
+  ) => {
+    const { query } = payload;
+    const id = getId(query);
+    if (type === REQUESTED && id) {
+      return set(
+        path.concat("data"),
+        state,
+        (data: any) => ({
+          ...data,
+          [id]: LOADING,
+        })
+      );
     }
-  );
+    if (type === FAILED && id) {
+      return set(
+        path.concat("data"),
+        state,
+        (data: any) => ({
+          ...data,
+          [id]: { ...AVAILABLE, error: payload.error },
+        })
+      );
+    }
+    if (type === SUCCEEDED && id) {
+      return set(
+        path.concat("data"),
+        state,
+        (data: any) => ({
+          ...data,
+          [id]: { ...AVAILABLE, value: payload.data },
+        })
+      );
+    }
+    return state;
+  };
+  const types = {
+    REQUESTED,
+    SUCCEEDED,
+    FAILED,
+  };
+  const creators = {
+    requested: (query: any) => ({
+      type: REQUESTED,
+      payload: { query },
+    }),
+    succeeded: (query: any, data: any) => ({
+      type: SUCCEEDED,
+      payload: { query, data },
+    }),
+    failed: (query: any, error: any) => ({
+      type: FAILED,
+      payload: { query, error },
+    }),
+  };
+  const thunk = (query: any) => (
+    dispatch: any,
+    getState: any
+  ) => {
+    const result = createSelectResult(query)(getState());
+    if (isRequested(result)) {
+      return Promise.resolve();
+    }
+    dispatch(creators.requested(query));
+    return fetch(...createFetchArgs(query)).then(
+      (resolve: any) =>
+        dispatch(creators.succeeded(query, resolve)),
+      (error: any) =>
+        dispatch(creators.failed(query, error))
+    );
+  };
   return {
     createSelectResult,
     reducer,
-    actionTypes: {
-      REQUESTED,
-      SUCCEEDED,
-      FAILED,
-    },
     actions: {
-      requested: (query: any) => ({
-        type: REQUESTED,
-        payload: { query },
-      }),
-      succeeded: (query: any, data: any) => ({
-        type: SUCCEEDED,
-        payload: { query, data },
-      }),
-      failed: (query: any, error: any) => ({
-        type: FAILED,
-        payload: { query, error },
-      }),
+      types,
+      creators,
     },
+    thunk,
   };
 };
 export default createBridge;

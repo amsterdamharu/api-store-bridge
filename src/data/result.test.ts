@@ -8,6 +8,7 @@ import {
   LOADING,
   AVAILABLE,
   NOT_REQUESTED,
+  isRequested,
 } from "./result";
 const ERROR = { ...AVAILABLE, error: true };
 test("is result", () => {
@@ -104,4 +105,12 @@ test("result promise", () => {
   return Promise.all([p1, p2, p3]).catch(() => {
     expect("should not reject").toBe(88);
   });
+});
+test("is result requested", () => {
+  expect(isRequested(LOADING)).toBe(true);
+  expect(isRequested(NOT_REQUESTED)).toBe(false);
+  expect(isRequested({ ...AVAILABLE, error: true })).toBe(
+    false
+  );
+  expect(isRequested(AVAILABLE)).toBe(true);
 });

@@ -1,17 +1,17 @@
-import createBridge, {
-  CREATE_SELECTOR,
-  set,
-} from "./apiStoreBridge";
+import createBridge, { set } from "./apiStoreBridge";
 import {
   AVAILABLE,
   LOADING,
   NOT_REQUESTED,
 } from "./result";
+const createFetchArgs = (x: any) => [x];
+const defaultArg = {
+  createFetchArgs,
+  entityName: "test",
+};
 test("selector returns not requested for query by id", () => {
   expect(
-    createBridge({
-      entityName: "test",
-    }).createSelectResult({ id: 1 })({
+    createBridge(defaultArg).createSelectResult({ id: 1 })({
       data: {},
     })
   ).toBe(NOT_REQUESTED);
@@ -20,7 +20,7 @@ test("selector returns available result from path query by id", () => {
   const ITEM = {};
   expect(
     createBridge({
-      entityName: "test",
+      ...defaultArg,
       path: ["a", "b"],
     }).createSelectResult({
       id: 1,
@@ -31,13 +31,13 @@ test("selector returns available result from path query by id", () => {
         },
       },
     })
-  ).toBe(ITEM);
+  ).toEqual({ ...AVAILABLE, value: ITEM });
 });
 test("selector returns not requested for query page", () => {
   expect(
-    createBridge({ entityName: "test" }).createSelectResult(
-      {}
-    )({ queries: {} })
+    createBridge(defaultArg).createSelectResult({})({
+      queries: {},
+    })
   ).toBe(NOT_REQUESTED);
 });
 test("selector returns for query page", () => {
@@ -50,53 +50,30 @@ test("selector returns for query page", () => {
     },
   };
   expect(
-    createBridge({ entityName: "test" }).createSelectResult(
-      {}
-    )(state)
+    createBridge(defaultArg).createSelectResult({})(state)
   ).toBe(NOT_REQUESTED);
   state.data["2"] = { ...AVAILABLE, value: "b" };
   expect(
-    createBridge({ entityName: "test" }).createSelectResult(
-      {}
-    )(state)
+    createBridge(defaultArg).createSelectResult({})(state)
   ).toEqual({ ...AVAILABLE, value: ["a", "b"] });
-});
-test("selector can override", () => {
-  const query = { id: 1 };
-  const state: any = {
-    data: {
-      1: 88,
-    },
-  };
-  const config = {
-    entityName: "test",
-    override: (_type: any, cb: any) => (...args: any[]) =>
-      cb(...args),
-  };
-  expect(
-    createBridge(config).createSelectResult(query)(state)
-  ).toBe(88);
-  config.override = (type) => (query: any) => (
-    state: any
-  ) =>
-    type === CREATE_SELECTOR ? [query, state, 88] : "nope";
-  expect(
-    createBridge(config).createSelectResult(query)(state)
-  ).toEqual([query, state, 88]);
 });
 test("returns action types", () => {
   const {
-    actionTypes: { REQUESTED, SUCCEEDED, FAILED },
-  } = createBridge({ entityName: "test" });
+    actions: {
+      types: { REQUESTED, SUCCEEDED, FAILED },
+    },
+  } = createBridge(defaultArg);
   expect(REQUESTED).toBe("TEST_REQUESTED");
   expect(SUCCEEDED).toBe("TEST_SUCCEEDED");
   expect(FAILED).toBe("TEST_FAILED");
 });
 test("action creator creates correct action", () => {
   const {
-    actions: { requested, succeeded, failed },
-    actionTypes: { REQUESTED, SUCCEEDED, FAILED },
-  } = createBridge({ entityName: "test" });
+    actions: {
+      creators: { requested, succeeded, failed },
+      types: { REQUESTED, SUCCEEDED, FAILED },
+    },
+  } = createBridge(defaultArg);
   const arg = { hello: "world" };
   const query = { query: "here" };
   expect(requested(query)).toEqual({
@@ -120,13 +97,21 @@ test("set works setting deeply nested state value", () => {
       (n: number) => n + 2
     )
   ).toEqual({ one: { two: 90, other: 88 }, other: 88 });
+  expect(
+    set([], { one: 88, two: 88 }, (o: any) => ({
+      ...o,
+      one: 90,
+    }))
+  ).toEqual({ one: 90, two: 88 });
 });
 test("reducer with query containing id", () => {
   const path = ["test"];
   const {
     reducer,
-    actions: { requested, succeeded, failed },
-  } = createBridge({ entityName: "test", path });
+    actions: {
+      creators: { requested, succeeded, failed },
+    },
+  } = createBridge({ ...defaultArg, path });
   const state = { test: { data: {}, queries: {} } };
   const itemRequested = reducer(
     state,
@@ -158,4 +143,67 @@ test("reducer with query containing id", () => {
       data: { 88: { ...AVAILABLE, value: "entity" } },
     },
   });
+});
+test("thunk should not dispatch when already requested", () => {
+  const { thunk } = createBridge(defaultArg);
+  const dispatch = jest.fn();
+  const query = { id: 1 };
+  const state: any = {
+    data: { "1": { ...AVAILABLE, value: 88 } },
+  };
+  const getState = () => state;
+  thunk(query)(dispatch, getState);
+  expect(dispatch).not.toHaveBeenCalled();
+  state.data["1"] = LOADING;
+  thunk(query)(dispatch, getState);
+  expect(dispatch).not.toHaveBeenCalled();
+});
+test("thunk should dispatch when not requested", async () => {
+  const ITEM = { id: 1 };
+  const resolve: any = { value: ITEM };
+  const {
+    thunk,
+    actions: {
+      creators: { requested, failed, succeeded },
+    },
+  } = createBridge({
+    ...defaultArg,
+    fetch: () => Promise.resolve(resolve.value),
+  });
+  const dispatch = jest.fn();
+  const query = { id: 1 };
+  const state: any = {
+    data: {},
+  };
+  const getState = () => state;
+  await thunk(query)(dispatch, getState);
+  expect(dispatch.mock.calls).toEqual([
+    [requested(query)],
+    [succeeded(query, ITEM)],
+  ]);
+  dispatch.mockReset();
+  resolve.value = Promise.reject("error");
+  await thunk(query)(dispatch, getState);
+  expect(dispatch.mock.calls).toEqual([
+    [requested(query)],
+    [failed(query, "error")],
+  ]);
+});
+test.only("Passed in createFetchArgs is used by thunk", async () => {
+  const ITEM = { id: 1 };
+  const createFetchArgs = jest.fn();
+  const { thunk } = createBridge({
+    ...defaultArg,
+    fetch: () => Promise.resolve(ITEM),
+    createFetchArgs,
+  });
+  const dispatch = (x: any) => x;
+  const query = { id: 1 };
+  const state: any = {
+    data: {},
+  };
+  const getState = () => state;
+  createFetchArgs.mockReturnValue([1, 2]);
+  await thunk(query)(dispatch, getState);
+  expect(createFetchArgs.mock.calls).toEqual([[query]]);
 });
