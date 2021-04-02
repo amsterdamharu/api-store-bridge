@@ -1,20 +1,16 @@
 import createBridge, { set } from "./apiStoreBridge";
-import {
-  AVAILABLE,
-  LOADING,
-  NOT_REQUESTED,
-} from "./result";
+import { FULFILLED, PENDING, NOT_CREATED } from "./result";
 const createFetchArgs = (x: any) => [x];
 const defaultArg = {
   createFetchArgs,
   entityName: "test",
 };
-test("selector returns not requested for query by id", () => {
+test("selector returns not created for query by id", () => {
   expect(
     createBridge(defaultArg).createSelectResult({ id: 1 })({
       data: {},
     })
-  ).toBe(NOT_REQUESTED);
+  ).toBe(NOT_CREATED);
 });
 test("selector returns available result from path query by id", () => {
   const ITEM = {};
@@ -31,14 +27,14 @@ test("selector returns available result from path query by id", () => {
         },
       },
     })
-  ).toEqual({ ...AVAILABLE, value: ITEM });
+  ).toEqual({ ...FULFILLED, resolved: ITEM });
 });
-test("selector returns not requested for query page", () => {
+test("selector returns not created for query page", () => {
   expect(
     createBridge(defaultArg).createSelectResult({})({
       queries: {},
     })
-  ).toBe(NOT_REQUESTED);
+  ).toBe(NOT_CREATED);
 });
 test("selector returns for query page", () => {
   const state: any = {
@@ -46,46 +42,46 @@ test("selector returns for query page", () => {
       "{}": [1, 2],
     },
     data: {
-      "1": { ...AVAILABLE, value: "a" },
+      "1": { ...FULFILLED, resolved: "a" },
     },
   };
   expect(
     createBridge(defaultArg).createSelectResult({})(state)
-  ).toBe(NOT_REQUESTED);
-  state.data["2"] = { ...AVAILABLE, value: "b" };
+  ).toBe(NOT_CREATED);
+  state.data["2"] = { ...FULFILLED, resolved: "b" };
   expect(
     createBridge(defaultArg).createSelectResult({})(state)
-  ).toEqual({ ...AVAILABLE, value: ["a", "b"] });
+  ).toEqual({ ...FULFILLED, resolved: ["a", "b"] });
 });
 test("returns action types", () => {
   const {
     actions: {
-      types: { REQUESTED, SUCCEEDED, FAILED },
+      types: { PENDING, FULFILLED, REJECTED },
     },
   } = createBridge(defaultArg);
-  expect(REQUESTED).toBe("TEST_REQUESTED");
-  expect(SUCCEEDED).toBe("TEST_SUCCEEDED");
-  expect(FAILED).toBe("TEST_FAILED");
+  expect(PENDING).toBe("TEST_PENDING");
+  expect(FULFILLED).toBe("TEST_FULFILLED");
+  expect(REJECTED).toBe("TEST_REJECTED");
 });
 test("action creator creates correct action", () => {
   const {
     actions: {
-      creators: { requested, succeeded, failed },
-      types: { REQUESTED, SUCCEEDED, FAILED },
+      creators: { pending, fulfilled, rejected },
+      types: { PENDING, FULFILLED, REJECTED },
     },
   } = createBridge(defaultArg);
   const arg = { hello: "world" };
   const query = { query: "here" };
-  expect(requested(query)).toEqual({
-    type: REQUESTED,
+  expect(pending(query)).toEqual({
+    type: PENDING,
     payload: { query },
   });
-  expect(succeeded(query, arg)).toEqual({
-    type: SUCCEEDED,
+  expect(fulfilled(query, arg)).toEqual({
+    type: FULFILLED,
     payload: { query, data: arg },
   });
-  expect(failed(query, arg)).toEqual({
-    type: FAILED,
+  expect(rejected(query, arg)).toEqual({
+    type: REJECTED,
     payload: { query, error: arg },
   });
 });
@@ -109,62 +105,59 @@ test("reducer with query containing id", () => {
   const {
     reducer,
     actions: {
-      creators: { requested, succeeded, failed },
+      creators: { pending, fulfilled, rejected },
     },
   } = createBridge({ ...defaultArg, path });
   const state = { test: { data: {}, queries: {} } };
-  const itemRequested = reducer(
-    state,
-    requested({ id: 88 })
-  );
-  expect(itemRequested).toEqual({
+  const itemPending = reducer(state, pending({ id: 88 }));
+  expect(itemPending).toEqual({
     ...state,
-    test: { ...state.test, data: { 88: LOADING } },
+    test: { ...state.test, data: { 88: PENDING } },
   });
-  const itemFailed = reducer(
+  const itemRejected = reducer(
     state,
-    failed({ id: 88 }, "error")
+    rejected({ id: 88 }, "error")
   );
-  expect(itemFailed).toEqual({
+  expect(itemRejected).toEqual({
     ...state,
     test: {
       ...state.test,
-      data: { 88: { ...AVAILABLE, error: "error" } },
+      data: { 88: { ...FULFILLED, rejected: "error" } },
     },
   });
-  const itemSucceeded = reducer(
+  const itemFulfilled = reducer(
     state,
-    succeeded({ id: 88 }, "entity")
+    fulfilled({ id: 88 }, "entity")
   );
-  expect(itemSucceeded).toEqual({
+  expect(itemFulfilled).toEqual({
     ...state,
     test: {
       ...state.test,
-      data: { 88: { ...AVAILABLE, value: "entity" } },
+      data: { 88: { ...FULFILLED, resolved: "entity" } },
     },
   });
 });
-test("thunk should not dispatch when already requested", () => {
+test("thunk should not dispatch when already created", () => {
   const { thunk } = createBridge(defaultArg);
   const dispatch = jest.fn();
   const query = { id: 1 };
   const state: any = {
-    data: { "1": { ...AVAILABLE, value: 88 } },
+    data: { "1": { ...FULFILLED, resolved: 88 } },
   };
   const getState = () => state;
   thunk(query)(dispatch, getState);
   expect(dispatch).not.toHaveBeenCalled();
-  state.data["1"] = LOADING;
+  state.data["1"] = PENDING;
   thunk(query)(dispatch, getState);
   expect(dispatch).not.toHaveBeenCalled();
 });
-test("thunk should dispatch when not requested", async () => {
+test("thunk should dispatch when not created", async () => {
   const ITEM = { id: 1 };
   const resolve: any = { value: ITEM };
   const {
     thunk,
     actions: {
-      creators: { requested, failed, succeeded },
+      creators: { pending, rejected, fulfilled },
     },
   } = createBridge({
     ...defaultArg,
@@ -178,18 +171,18 @@ test("thunk should dispatch when not requested", async () => {
   const getState = () => state;
   await thunk(query)(dispatch, getState);
   expect(dispatch.mock.calls).toEqual([
-    [requested(query)],
-    [succeeded(query, ITEM)],
+    [pending(query)],
+    [fulfilled(query, ITEM)],
   ]);
   dispatch.mockReset();
   resolve.value = Promise.reject("error");
   await thunk(query)(dispatch, getState);
   expect(dispatch.mock.calls).toEqual([
-    [requested(query)],
-    [failed(query, "error")],
+    [pending(query)],
+    [rejected(query, "error")],
   ]);
 });
-test.only("Passed in createFetchArgs is used by thunk", async () => {
+test("Passed in createFetchArgs is used by thunk", async () => {
   const ITEM = { id: 1 };
   const createFetchArgs = jest.fn();
   const { thunk } = createBridge({

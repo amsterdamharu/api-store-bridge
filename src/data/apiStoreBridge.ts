@@ -1,17 +1,17 @@
 //reducer with page needs function to get data and meta from api result
-//test page reducer for requested, succeeded and failed
+//test page reducer for pending, succeeded and failed
 //no container that passes props, you should make it yourself
 // so it is not react specific
 import {
-  AVAILABLE,
+  FULFILLED as FULFILLED_TYPE,
   isRequested,
-  LOADING,
+  PENDING as PENDING_TYPE,
   mapResults,
   asResult,
-  NOT_REQUESTED,
+  NOT_CREATED,
 } from "./result";
 const windowFetch = fetch;
-//should have no react no redux, only reselect
+//should have no react no redux
 interface Id {
   id: string | number;
 }
@@ -64,61 +64,67 @@ const createBridge = ({
     if (getId(query)) {
       return asResult(
         selectPath(path, state).data[getId(query)] ||
-          NOT_REQUESTED
+          NOT_CREATED
       );
     }
     return mapResults(
       selectPath(path, state).queries[
         queryToString(query)
-      ] || NOT_REQUESTED
+      ] || NOT_CREATED
     )((ids: number[] | string[]) =>
       mapResults(
         ...ids.map(
-          (id: any) => state.data[id] || NOT_REQUESTED
+          (id: any) => state.data[id] || NOT_CREATED
         )
       )((...items: any[]) => items)
     );
   };
-  const REQUESTED = `${entityName.toUpperCase()}_REQUESTED`;
-  const SUCCEEDED = `${entityName.toUpperCase()}_SUCCEEDED`;
-  const FAILED = `${entityName.toUpperCase()}_FAILED`;
+  const PENDING = `${entityName.toUpperCase()}_PENDING`;
+  const FULFILLED = `${entityName.toUpperCase()}_FULFILLED`;
+  const REJECTED = `${entityName.toUpperCase()}_REJECTED`;
   const reducer = (
     state: any,
     { type, payload }: { type: string; payload: any }
   ) => {
     const { query } = payload;
     const id = getId(query);
-    if (type === REQUESTED && id) {
+    if (type === PENDING && id) {
       return set(
         path.concat("data"),
         state,
         (data: any) => ({
           ...data,
-          [id]: LOADING,
+          [id]: PENDING_TYPE,
         })
       );
     }
-    if (type === FAILED && id) {
+    if (type === REJECTED && id) {
       return set(
         path.concat("data"),
         state,
         (data: any) => ({
           ...data,
-          [id]: { ...AVAILABLE, error: payload.error },
+          [id]: {
+            ...FULFILLED_TYPE,
+            rejected: payload.error,
+          },
         })
       );
     }
-    if (type === SUCCEEDED && id) {
+    if (type === FULFILLED && id) {
       return set(
         path.concat("data"),
         state,
         (data: any) => ({
           ...data,
-          [id]: { ...AVAILABLE, value: payload.data },
+          [id]: {
+            ...FULFILLED_TYPE,
+            resolved: payload.data,
+          },
         })
       );
     }
-    if (type === REQUESTED) {
+    if (type === PENDING) {
       return set(
         path.concat("queries"),
         state,
@@ -126,12 +132,12 @@ const createBridge = ({
           ...queries,
           [queryToString(query)]: {
             ...queries[queryToString(query)],
-            ...LOADING,
+            ...PENDING_TYPE,
           },
         })
       );
     }
-    if (type === SUCCEEDED) {
+    if (type === FULFILLED) {
       return set(path, state, (entityState: any) => ({
         ...entityState,
         queries: {
@@ -151,7 +157,7 @@ const createBridge = ({
         },
       }));
     }
-    if (type === FAILED) {
+    if (type === REJECTED) {
       return set(
         path.concat("queries"),
         state,
@@ -159,7 +165,7 @@ const createBridge = ({
           ...queries,
           [queryToString(query)]: {
             ...queries[queryToString(query)],
-            ...AVAILABLE,
+            ...FULFILLED_TYPE,
             error: payload.error,
           },
         })
@@ -168,21 +174,21 @@ const createBridge = ({
     return state;
   };
   const types = {
-    REQUESTED,
-    SUCCEEDED,
-    FAILED,
+    PENDING,
+    FULFILLED,
+    REJECTED,
   };
   const creators = {
-    requested: (query: any) => ({
-      type: REQUESTED,
+    pending: (query: any) => ({
+      type: PENDING,
       payload: { query },
     }),
-    succeeded: (query: any, data: any) => ({
-      type: SUCCEEDED,
+    fulfilled: (query: any, data: any) => ({
+      type: FULFILLED,
       payload: { query, data },
     }),
-    failed: (query: any, error: any) => ({
-      type: FAILED,
+    rejected: (query: any, error: any) => ({
+      type: REJECTED,
       payload: { query, error },
     }),
   };
@@ -194,12 +200,12 @@ const createBridge = ({
     if (isRequested(result)) {
       return Promise.resolve();
     }
-    dispatch(creators.requested(query));
+    dispatch(creators.pending(query));
     return fetch(...createFetchArgs(query)).then(
       (resolve: any) =>
-        dispatch(creators.succeeded(query, resolve)),
+        dispatch(creators.fulfilled(query, resolve)),
       (error: any) =>
-        dispatch(creators.failed(query, error))
+        dispatch(creators.rejected(query, error))
     );
   };
   return {

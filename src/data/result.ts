@@ -1,31 +1,29 @@
 function getValue<T>(result: Result<T>) {
-  return result.value;
+  return result.resolved;
 }
-export const LOADING = {
-  loading: true,
-  requested: true,
-  reloading: false,
-  error: null,
-  value: null,
+export const PENDING = {
+  pending: true, //async is pending
+  created: true, //async is created
+  rejected: null,
+  resolved: null,
 };
-export const AVAILABLE = {
-  ...LOADING,
-  loading: false,
+export const FULFILLED = {
+  ...PENDING,
+  pending: false,
 };
-export const NOT_REQUESTED = {
-  ...LOADING,
-  loading: false,
-  requested: false,
+export const NOT_CREATED = {
+  ...PENDING,
+  pending: false,
+  created: false,
 };
 export type Result<T> = {
-  loading: boolean;
-  requested: boolean;
-  reloading: boolean;
-  error: any;
-  value: T;
+  pending: boolean;
+  created: boolean;
+  rejected: any;
+  resolved: T;
 };
 export const isResult = (val: any = {}) =>
-  ["loading", "requested", "reloading", "error"].reduce(
+  ["pending", "created", "rejected"].reduce(
     (result, key) => result && val.hasOwnProperty(key),
     true
   );
@@ -34,18 +32,18 @@ export function asResult<T>(
 ): Result<T> {
   return isResult(value)
     ? (value as Result<T>)
-    : ({ ...AVAILABLE, value } as Result<T>);
+    : ({ ...FULFILLED, resolved: value } as Result<T>);
 }
 export const isAvailable = (value: Result<any>) =>
-  !value.loading &&
-  value.requested &&
-  !Boolean(value.error);
+  !value.pending &&
+  value.created &&
+  !Boolean(value.rejected);
 export const pickUnavailableResult = (
   results: Result<any>[],
   priority = [
-    (result: Result<any>) => Boolean(result.error),
-    (result: Result<any>) => !result.requested,
-    (result: Result<any>) => result.loading,
+    (result: Result<any>) => Boolean(result.rejected),
+    (result: Result<any>) => !result.created,
+    (result: Result<any>) => result.pending,
   ]
 ) => {
   const recur = (
@@ -85,7 +83,7 @@ export const promiseResults = (
   }
   return Promise.resolve(forcedResults.map(getValue));
 };
-export const isRequested = (result: any) =>
-  ((result.loading && result.requested) || //is requested
+export const isRequested = (result: Result<any>) =>
+  ((result.pending && result.created) || //is requested
     isAvailable(result)) && //is available
-  !Boolean(result.error); //has an error (request again)
+  !Boolean(result.rejected); //has been rejected (re create)
