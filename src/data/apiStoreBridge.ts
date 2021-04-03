@@ -1,4 +1,3 @@
-//reducer with page needs function to get data and meta from api result
 //test page reducer for pending, succeeded and failed
 //no container that passes props, you should make it yourself
 // so it is not react specific
@@ -22,6 +21,11 @@ interface Arg {
   entityName: string;
   fetch?: any;
   createFetchArgs: (arg0: object) => any[];
+  getDataFromApiResult: (
+    arg0: object,
+    arg1: object
+  ) => any[];
+  getMetaFromApiResult: (arg0: object, arg1: object) => any;
 }
 const selectPath = (path: string[], state: any): any =>
   path.length === 0
@@ -57,6 +61,8 @@ const createBridge = ({
   queryToString = (query) => JSON.stringify(query),
   fetch = windowFetch,
   createFetchArgs,
+  getDataFromApiResult,
+  getMetaFromApiResult,
 }: Arg) => {
   const createSelectResult = (query: any) => (
     state: any
@@ -142,10 +148,12 @@ const createBridge = ({
         ...entityState,
         queries: {
           ...entityState.queries,
-          [queryToString(query)]: asResult(
-            //@todo: need also meta data for paging
-            payload.data.map(getId)
-          ),
+          [queryToString(query)]: asResult({
+            ids: getDataFromApiResult(payload, query).map(
+              getId
+            ),
+            meta: getMetaFromApiResult(payload, query),
+          }),
         },
         data: {
           ...entityState.data,

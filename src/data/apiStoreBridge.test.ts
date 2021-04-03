@@ -4,6 +4,8 @@ const createFetchArgs = (x: any) => [x];
 const defaultArg = {
   createFetchArgs,
   entityName: "test",
+  getDataFromApiResult: () => 88,
+  getMetaFromApiResult: () => 88,
 };
 test("selector returns not created for query by id", () => {
   expect(
