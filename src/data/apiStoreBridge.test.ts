@@ -41,7 +41,7 @@ test("selector returns not created for query page", () => {
 test("selector returns for query page", () => {
   const state: any = {
     queries: {
-      "{}": [1, 2],
+      "{}": { ids: [1, 2], meta: 88 },
     },
     data: {
       "1": { ...FULFILLED, resolved: "a" },
@@ -53,7 +53,10 @@ test("selector returns for query page", () => {
   state.data["2"] = { ...FULFILLED, resolved: "b" };
   expect(
     createBridge(defaultArg).createSelectResult({})(state)
-  ).toEqual({ ...FULFILLED, resolved: ["a", "b"] });
+  ).toEqual({
+    ...FULFILLED,
+    resolved: { items: ["a", "b"], meta: 88 },
+  });
 });
 test("returns action types", () => {
   const {

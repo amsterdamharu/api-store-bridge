@@ -77,12 +77,23 @@ const createBridge = ({
       selectPath(path, state).queries[
         queryToString(query)
       ] || NOT_CREATED
-    )((ids: number[] | string[]) =>
-      mapResults(
-        ...ids.map(
-          (id: any) => state.data[id] || NOT_CREATED
-        )
-      )((...items: any[]) => items)
+    )(
+      ({
+        ids,
+        meta,
+      }:
+        | { ids: number[]; meta: any }
+        | { ids: string[]; meta: any }) =>
+        mapResults(
+          ...[meta].concat(
+            ids.map(
+              (id: any) => state.data[id] || NOT_CREATED
+            )
+          )
+        )((meta: any, ...items: any[]) => ({
+          meta,
+          items,
+        }))
     );
   };
   const PENDING = `${entityName.toUpperCase()}_PENDING`;
