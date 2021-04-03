@@ -4,7 +4,7 @@ const createFetchArgs = (x: any) => [x];
 const defaultArg = {
   createFetchArgs,
   entityName: "test",
-  getDataFromApiResult: () => 88,
+  getDataFromApiResult: () => [{ id: 1 }, { id: 2 }],
   getMetaFromApiResult: () => 88,
 };
 test("selector returns not created for query by id", () => {
@@ -136,6 +136,59 @@ test("reducer with query containing id", () => {
     test: {
       ...state.test,
       data: { 88: { ...FULFILLED, resolved: "entity" } },
+    },
+  });
+});
+test("reducer with query to get page", () => {
+  const path = ["test"];
+  const {
+    reducer,
+    actions: {
+      creators: { pending, fulfilled, rejected },
+    },
+  } = createBridge({ ...defaultArg, path });
+  const state = { test: { data: {}, queries: {} } };
+  const itemPending = reducer(state, pending({ page: 1 }));
+  expect(itemPending).toEqual({
+    ...state,
+    test: {
+      ...state.test,
+      queries: {
+        '{"page":1}': PENDING,
+      },
+    },
+  });
+  const itemRejected = reducer(
+    state,
+    rejected({ page: 1 }, "error")
+  );
+  expect(itemRejected).toEqual({
+    ...state,
+    test: {
+      ...state.test,
+      queries: {
+        '{"page":1}': { ...FULFILLED, rejected: "error" },
+      },
+    },
+  });
+  const itemFulfilled = reducer(
+    state,
+    fulfilled({ page: 88 }, "entity")
+  );
+  expect(itemFulfilled).toEqual({
+    ...state,
+    test: {
+      ...state.test,
+      data: {
+        "1": { ...FULFILLED, resolved: { id: 1 } },
+        "2": { ...FULFILLED, resolved: { id: 2 } },
+      },
+      queries: {
+        '{"page":88}': {
+          ...FULFILLED,
+          resolved: { ids: [1, 2], meta: 88 },
+        },
+      },
     },
   });
 });

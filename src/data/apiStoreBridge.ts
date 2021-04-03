@@ -158,8 +158,12 @@ const createBridge = ({
         data: {
           ...entityState.data,
           ...Object.fromEntries(
-            payload.data.map((item: any) => [
-              [getId(item), asResult(item)],
+            getDataFromApiResult(
+              payload,
+              query
+            ).map((item: any) => [
+              getId(item),
+              asResult(item),
             ])
           ),
         },
@@ -174,7 +178,7 @@ const createBridge = ({
           [queryToString(query)]: {
             ...queries[queryToString(query)],
             ...FULFILLED_TYPE,
-            error: payload.error,
+            rejected: payload.error,
           },
         })
       );
