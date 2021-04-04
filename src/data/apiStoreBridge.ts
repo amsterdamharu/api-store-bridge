@@ -11,11 +11,8 @@ import {
 } from "./result";
 const windowFetch = fetch;
 //should have no react no redux
-interface Id {
-  id: string | number;
-}
 interface Arg {
-  getId?: (arg0: Id) => string | number;
+  getId?: (arg0: any) => string | number;
   path?: string[];
   queryToString?: (arg0: object) => string;
   entityName: string;
@@ -56,7 +53,7 @@ export function set(
 }
 const createBridge = ({
   entityName,
-  getId = ({ id }: Id) => id,
+  getId = ({ id }: any) => id,
   path = [],
   queryToString = (query) => JSON.stringify(query),
   fetch = windowFetch,
@@ -73,27 +70,20 @@ const createBridge = ({
           NOT_CREATED
       );
     }
+    const dataState = selectPath(path, state);
     return mapResults(
-      selectPath(path, state).queries[
-        queryToString(query)
-      ] || NOT_CREATED
-    )(
-      ({
-        ids,
-        meta,
-      }:
-        | { ids: number[]; meta: any }
-        | { ids: string[]; meta: any }) =>
-        mapResults(
-          ...[meta].concat(
-            ids.map(
-              (id: any) => state.data[id] || NOT_CREATED
-            )
+      dataState.queries[queryToString(query)] || NOT_CREATED
+    )(({ ids, meta }: any) =>
+      mapResults(
+        ...[meta].concat(
+          ids.map(
+            (id: any) => dataState.data[id] || NOT_CREATED
           )
-        )((meta: any, ...items: any[]) => ({
-          meta,
-          items,
-        }))
+        )
+      )((meta: any, ...items: any[]) => ({
+        meta,
+        items,
+      }))
     );
   };
   const PENDING = `${entityName.toUpperCase()}_PENDING`;
@@ -101,9 +91,9 @@ const createBridge = ({
   const REJECTED = `${entityName.toUpperCase()}_REJECTED`;
   const reducer = (
     state: any,
-    { type, payload }: { type: string; payload: any }
+    { type, payload = {} }: { type: string; payload?: any }
   ) => {
-    const { query } = payload;
+    const { query = {} } = payload;
     const id = getId(query);
     if (type === PENDING && id) {
       return set(

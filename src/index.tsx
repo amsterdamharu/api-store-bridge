@@ -3,11 +3,42 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { applyMiddleware, compose, createStore } from 'redux';
+import { productReducer } from './commercetools';
+import { Provider } from 'react-redux';
+const initialState = {
+  data: {
+    products: {
+      data: {}, queries: {}
+    }
+  }
+};
+const rootReducer = (state: any, action: any) => {
+  return productReducer(state, action);
+};
+//creating store with redux dev tools
+const composeEnhancers =
+  (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(
+  rootReducer,
+  initialState,
+  composeEnhancers(
+    applyMiddleware(
+      ({ dispatch, getState }) => (next) => (action) =>
+        typeof action === 'function'
+          ? action(dispatch, getState)
+          : next(action)
+    )
+  )
+);
+
+
+
 
 ReactDOM.render(
-  <React.StrictMode>
+  <Provider store={store}>
     <App />
-  </React.StrictMode>,
+  </Provider>,
   document.getElementById('root')
 );
 
