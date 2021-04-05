@@ -6,11 +6,13 @@ import reportWebVitals from './reportWebVitals';
 import { applyMiddleware, compose, createStore } from 'redux';
 import { productReducer } from './commercetools';
 import { Provider } from 'react-redux';
+const EMPTY_DATA = {
+  data: {}, queries: {}
+}
 const initialState = {
   data: {
-    products: {
-      data: {}, queries: {}
-    }
+    products: EMPTY_DATA,
+    cart: EMPTY_DATA
   }
 };
 const rootReducer = (state: any, action: any) => {
