@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { applyMiddleware, compose, createStore } from 'redux';
-import { productReducer } from './commercetools';
+import { productsReducer, activeCartReducer } from './commercetools';
 import { Provider } from 'react-redux';
 const EMPTY_DATA = {
   data: {}, queries: {}
@@ -15,8 +15,11 @@ const initialState = {
     cart: EMPTY_DATA
   }
 };
+const commercetoolsReducers = [productsReducer, activeCartReducer];
 const rootReducer = (state: any, action: any) => {
-  return productReducer(state, action);
+  return commercetoolsReducers.reduce(
+    (state, reducer) => reducer(state, action), state
+  );
 };
 //creating store with redux dev tools
 const composeEnhancers =
