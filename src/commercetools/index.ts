@@ -7,4 +7,7 @@ export {
   activeCartThunk,
   activeCartCreateSelectResult,
   activeCartReducer,
+  createCartThunk,
+  createCartCreateSelectResult,
+  createCartReducer,
 } from "./activeCart";

@@ -1,4 +1,5 @@
-import createBridge, { set } from "./apiStoreBridge";
+import createBridge from "./apiStoreBridge";
+import { set } from "./common";
 import { FULFILLED, PENDING, NOT_CREATED } from "./result";
 const createFetchArgs = (x: any) => [x];
 const defaultArg = {

@@ -1,6 +1,7 @@
 //test page reducer for pending, succeeded and failed
 //no container that passes props, you should make it yourself
 // so it is not react specific
+import { selectPath, set } from './common';
 import {
   FULFILLED as FULFILLED_TYPE,
   isRequested,
@@ -8,7 +9,7 @@ import {
   mapResults,
   asResult,
   NOT_CREATED,
-} from "./result";
+} from './result';
 const windowFetch = fetch;
 //should have no react no redux
 interface Arg {
@@ -23,33 +24,6 @@ interface Arg {
     arg1: object
   ) => any[];
   getMetaFromApiResult: (arg0: object, arg1: object) => any;
-}
-const selectPath = (path: string[], state: any): any =>
-  path.length === 0
-    ? state
-    : selectPath(path.slice(1), state[path[0]]);
-export function set(
-  path: string[],
-  state: any,
-  callback: any
-): any {
-  if (path.length === 0) {
-    return callback(state);
-  }
-  if (path.length === 1) {
-    return {
-      ...state,
-      [path[0]]: callback(state[path[0]]),
-    };
-  }
-  const current: any = state[path[0]];
-  return {
-    ...state,
-    [path[0]]: {
-      ...current,
-      ...set(path.slice(1), current, callback),
-    },
-  };
 }
 const createBridge = ({
   entityName,
@@ -97,7 +71,7 @@ const createBridge = ({
     const id = getId(query);
     if (type === PENDING && id) {
       return set(
-        path.concat("data"),
+        path.concat('data'),
         state,
         (data: any) => ({
           ...data,
@@ -107,7 +81,7 @@ const createBridge = ({
     }
     if (type === REJECTED && id) {
       return set(
-        path.concat("data"),
+        path.concat('data'),
         state,
         (data: any) => ({
           ...data,
@@ -120,7 +94,7 @@ const createBridge = ({
     }
     if (type === FULFILLED && id) {
       return set(
-        path.concat("data"),
+        path.concat('data'),
         state,
         (data: any) => ({
           ...data,
@@ -133,7 +107,7 @@ const createBridge = ({
     }
     if (type === PENDING) {
       return set(
-        path.concat("queries"),
+        path.concat('queries'),
         state,
         (queries: any) => ({
           ...queries,
@@ -172,7 +146,7 @@ const createBridge = ({
     }
     if (type === REJECTED) {
       return set(
-        path.concat("queries"),
+        path.concat('queries'),
         state,
         (queries: any) => ({
           ...queries,
@@ -229,6 +203,10 @@ const createBridge = ({
       creators,
     },
     thunk,
+    queryToString,
+    path,
+    entityName,
+    fetch,
   };
 };
 export default createBridge;
