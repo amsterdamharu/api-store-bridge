@@ -1,13 +1,12 @@
 import createBridge from '../../data/apiStoreBridge';
 import fetchJson from '../fetchJson';
-import withAuth from '../withAuth';
 
 const { thunk, createSelectResult, reducer } = createBridge(
   {
     getId: (arg) => arg.id,
     path: ['data', 'products'],
     entityName: 'products',
-    fetch: withAuth(fetchJson()),
+    fetch: fetchJson,
     createFetchArgs: (query: any) => {
       //@todo: build url in external function
       const url = new URL(

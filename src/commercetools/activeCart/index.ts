@@ -2,13 +2,12 @@ import createApiStoreAction from '../../data/apiStoreAction';
 import createBridge from '../../data/apiStoreBridge';
 import { promiseResults } from '../../data/result';
 import fetchJson from '../fetchJson';
-import withAuth from '../withAuth';
 
 const bridge = createBridge({
   getId: () => 'active',
   path: ['data', 'cart'],
   entityName: 'cart',
-  fetch: withAuth(fetchJson()),
+  fetch: fetchJson,
   createFetchArgs: (query) => {
     return [
       `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/active-cart`,
@@ -26,7 +25,7 @@ const {
   actions: createActions,
 } = createApiStoreAction(bridge, {
   actionName: 'create',
-  fetch: withAuth(fetchJson()),
+  fetch: fetchJson,
   createFetchArgs: (query: any) => {
     return [
       `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/carts`,
@@ -52,13 +51,15 @@ const {
   actions: addLineActions,
 } = createApiStoreAction(bridge, {
   actionName: 'addLine',
-  fetch: withAuth(fetchJson()),
+  fetch: fetchJson,
   createFetchArgs: (query: any) => {
-    //@todo: get the current cart??
-    const cartId = '0ac30cd0-11cb-4bf0-b182-0f674abe188f';
-    //@todo: this should come from cart
-    const version = 15;
-    const { productId, variantId, quantity = 1 } = query;
+    const {
+      cartId,
+      version,
+      productId,
+      variantId,
+      quantity = 1,
+    } = query;
     return [
       `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/carts/${cartId}`,
       {
@@ -110,16 +111,17 @@ export const createCartThunk = (query: any) => (
   getState: any
 ) => {
   //only create when it's not created
-  return promiseResults(
-    createCartCreateSelectResult(query)(getState())
-  ).then(
-    ([result]) => result,
-    () => dispatch(createThunk(query))
-  );
+  return activeCartThunk(query)(dispatch, getState)
+    .then(() =>
+      promiseResults(
+        activeCartCreateSelectResult(query)(getState())
+      )
+    )
+    .then(
+      ([result]: any[]) => result,
+      () => dispatch(createThunk(query))
+    );
 };
-
-//createThunk;
-
 export const createCartReducer = createSetDataOnUpdate(
   createActions.types.FULFILLED,
   createReducer
@@ -127,7 +129,37 @@ export const createCartReducer = createSetDataOnUpdate(
 //@todo: cannot add same line, query is same so thunk
 //  thinks it does not need to do anything
 //@todo: create cart if it doesn't exist
-export const addCartLineThunk = addLineThunk;
+export const addCartLineThunk = (query: any) => (
+  dispatch: any,
+  getState: any
+) => {
+  return activeCartThunk(query)(dispatch, getState).then(
+    () => {
+      return promiseResults(
+        activeCartCreateSelectResult(query)(getState())
+      ).then(
+        ([cart]: any[]) =>
+          addLineThunk({
+            ...query,
+            cartId: cart.id,
+            version: cart.version,
+          })(dispatch, getState),
+        () => {
+          //cart does not exist
+          //@todo: currency and country from state
+          //  responsible by crateCartThunk to get
+          //  remove from other components
+          return createCartThunk({
+            currency: 'USD',
+            country: 'US',
+          })(dispatch, getState).then(() =>
+            addCartLineThunk(query)(dispatch, getState)
+          );
+        }
+      );
+    }
+  );
+};
 export const addCartLineCreateSelect = addLineCreateSelect;
 export const addCartLineReducer = createSetDataOnUpdate(
   addLineActions.types.FULFILLED,

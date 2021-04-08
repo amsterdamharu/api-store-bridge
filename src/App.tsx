@@ -19,8 +19,6 @@ function App() {
   (window as any).createCartThunk = createCartThunk;
   useEffect(() => {
     dispatch(productsThunk(query));
-    // dispatch(activeCartThunk(query));
-    // dispatch(createCartThunk(query));
   }, [dispatch]);
   const selectProducts = useMemo(
     () => productsCreateSelectResult(query),
