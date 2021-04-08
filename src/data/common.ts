@@ -1,10 +1,11 @@
 export const selectPath = (
   path: string[],
   state: any
-): any =>
-  path.length === 0
+): any => {
+  return path.length === 0
     ? state
     : selectPath(path.slice(1), state[path[0]]);
+};
 export function set(
   path: string[],
   state: any,

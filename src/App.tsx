@@ -7,6 +7,7 @@ import {
   productsThunk,
   createCartThunk,
 } from './commercetools';
+import Product from './components/Product';
 //@todo: click a button to add to cart
 const query = {
   currency: 'USD',
@@ -14,22 +15,27 @@ const query = {
 };
 function App() {
   const dispatch = useDispatch();
+  (window as any).d = dispatch;
+  (window as any).createCartThunk = createCartThunk;
   useEffect(() => {
-    // dispatch(productsThunk(query));
+    dispatch(productsThunk(query));
     // dispatch(activeCartThunk(query));
-    dispatch(createCartThunk(query));
+    // dispatch(createCartThunk(query));
   }, [dispatch]);
   const selectProducts = useMemo(
     () => productsCreateSelectResult(query),
     []
   );
-  // const productResult = useSelector(selectProducts);
-  const productResult = '';
+  const productResult = useSelector(selectProducts);
   return (
     <div>
-      <pre>
-        {JSON.stringify(productResult, undefined, 2)}
-      </pre>
+      <ul>
+        {(productResult.resolved?.items || []).map(
+          (product: any) => (
+            <Product key={product.id} product={product} />
+          )
+        )}
+      </ul>
     </div>
   );
 }

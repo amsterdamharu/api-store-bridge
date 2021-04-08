@@ -45,10 +45,7 @@ const createApiStoreAction = (
     const actionState = actionsState[actionName] || {};
     return mapResults(
       actionState[queryToString(query)] || NOT_CREATED
-    )((result: any) => ({
-      data: getDataFromApiResult(result),
-      meta: getMetaFromApiResult(result),
-    }));
+    )((result: any) => result);
   };
   const PRE = `${entityName.toUpperCase()}_${actionName.toUpperCase()}`;
   const PENDING = `${PRE}_PENDING`;
