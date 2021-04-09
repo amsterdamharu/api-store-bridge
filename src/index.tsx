@@ -3,26 +3,39 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { applyMiddleware, compose, createStore } from 'redux';
+import {
+  applyMiddleware,
+  compose,
+  createStore,
+} from 'redux';
 import { reducers } from './commercetools';
 import { Provider } from 'react-redux';
 const EMPTY_DATA = {
-  data: {}, queries: {}, actions: {}
-}
+  data: {},
+  queries: {},
+  actions: {},
+};
 const initialState = {
   data: {
     products: EMPTY_DATA,
-    cart: EMPTY_DATA
-  }
+    cart: EMPTY_DATA,
+  },
+  preferences: {
+    country: 'US',
+    locale: 'en',
+    currency: 'USD',
+  },
 };
 const rootReducer = (state: any, action: any) => {
   return reducers.reduce(
-    (state, reducer) => reducer(state, action), state
+    (state, reducer) => reducer(state, action),
+    state
   );
 };
 //creating store with redux dev tools
 const composeEnhancers =
-  (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+  (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ||
+  compose;
 const store = createStore(
   rootReducer,
   initialState,
@@ -35,9 +48,6 @@ const store = createStore(
     )
   )
 );
-
-
-
 
 ReactDOM.render(
   <Provider store={store}>

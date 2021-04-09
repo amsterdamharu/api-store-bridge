@@ -8,6 +8,7 @@ export {
   productsThunk,
   productsReducer,
   productsCreateSelectResult,
+  selectProductQuery,
 } from './products';
 export {
   activeCartThunk,
@@ -19,6 +20,7 @@ export {
   addCartLineThunk,
   addCartLineCreateSelect,
   addCartLineReducer,
+  actions as cartActions,
 } from './activeCart';
 export const reducers = [
   productsReducer,
@@ -26,3 +28,4 @@ export const reducers = [
   createCartReducer,
   addCartLineReducer,
 ];
+export { selectPreferences } from './selectors';

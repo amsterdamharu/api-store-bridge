@@ -2,27 +2,20 @@ import React, { useEffect, useMemo } from 'react';
 import './App.css';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  activeCartThunk,
   productsCreateSelectResult,
   productsThunk,
-  createCartThunk,
+  selectProductQuery,
 } from './commercetools';
 import Product from './components/Product';
-//@todo: click a button to add to cart
-const query = {
-  currency: 'USD',
-  country: 'US',
-};
 function App() {
   const dispatch = useDispatch();
-  (window as any).d = dispatch;
-  (window as any).createCartThunk = createCartThunk;
+  const query: any = useSelector(selectProductQuery);
   useEffect(() => {
     dispatch(productsThunk(query));
-  }, [dispatch]);
+  }, [dispatch, query]);
   const selectProducts = useMemo(
     () => productsCreateSelectResult(query),
-    []
+    [query]
   );
   const productResult = useSelector(selectProducts);
   return (

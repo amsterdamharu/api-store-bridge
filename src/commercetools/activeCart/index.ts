@@ -2,6 +2,7 @@ import createApiStoreAction from '../../data/apiStoreAction';
 import createBridge from '../../data/apiStoreBridge';
 import { promiseResults } from '../../data/result';
 import fetchJson from '../fetchJson';
+import { selectPreferences } from '../selectors';
 
 const bridge = createBridge({
   getId: () => 'active',
@@ -126,9 +127,6 @@ export const createCartReducer = createSetDataOnUpdate(
   createActions.types.FULFILLED,
   createReducer
 );
-//@todo: cannot add same line, query is same so thunk
-//  thinks it does not need to do anything
-//@todo: create cart if it doesn't exist
 export const addCartLineThunk = (query: any) => (
   dispatch: any,
   getState: any
@@ -137,26 +135,33 @@ export const addCartLineThunk = (query: any) => (
     () => {
       return promiseResults(
         activeCartCreateSelectResult(query)(getState())
-      ).then(
-        ([cart]: any[]) =>
-          addLineThunk({
-            ...query,
-            cartId: cart.id,
-            version: cart.version,
-          })(dispatch, getState),
-        () => {
-          //cart does not exist
-          //@todo: currency and country from state
-          //  responsible by crateCartThunk to get
-          //  remove from other components
-          return createCartThunk({
-            currency: 'USD',
-            country: 'US',
-          })(dispatch, getState).then(() =>
-            addCartLineThunk(query)(dispatch, getState)
+      )
+        .then(
+          ([cart]: any[]) => {
+            const newQuery = {
+              ...query,
+              cartId: cart.id,
+              version: cart.version,
+            };
+            return addLineThunk(newQuery)(
+              dispatch,
+              getState
+            ).then(() => newQuery);
+          },
+          () => {
+            //cart does not exist
+            return createCartThunk(
+              selectPreferences(getState())
+            )(dispatch, getState).then(() =>
+              addCartLineThunk(query)(dispatch, getState)
+            );
+          }
+        )
+        .then((query) => {
+          return dispatch(
+            addLineActions.creators.remove(query)
           );
-        }
-      );
+        });
     }
   );
 };
@@ -165,3 +170,8 @@ export const addCartLineReducer = createSetDataOnUpdate(
   addLineActions.types.FULFILLED,
   addLineReducer
 );
+export const actions = {
+  get: bridge.actions,
+  crate: createActions,
+  addLine: addLineActions,
+};

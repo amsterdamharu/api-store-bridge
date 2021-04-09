@@ -1,5 +1,7 @@
+import { createSelector } from 'reselect';
 import createBridge from '../../data/apiStoreBridge';
 import fetchJson from '../fetchJson';
+import { selectPreferences } from '../selectors';
 
 const { thunk, createSelectResult, reducer } = createBridge(
   {
@@ -39,3 +41,11 @@ const { thunk, createSelectResult, reducer } = createBridge(
 export const productsThunk = thunk;
 export const productsCreateSelectResult = createSelectResult;
 export const productsReducer = reducer;
+export const selectProductQuery = createSelector(
+  [selectPreferences],
+  ({ country, locale, currency }) => ({
+    country,
+    locale,
+    currency,
+  })
+);

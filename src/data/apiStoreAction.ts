@@ -51,12 +51,27 @@ const createApiStoreAction = (
   const PENDING = `${PRE}_PENDING`;
   const FULFILLED = `${PRE}_FULFILLED`;
   const REJECTED = `${PRE}_REJECTED`;
+  const REMOVE = `${PRE}_REMOVE`;
 
   const reducer = (
     state: any,
     { type, payload = {} }: { type: string; payload?: any }
   ) => {
     const { query = {} } = payload;
+    if (type === REMOVE) {
+      return set(path, state, (actions: any) => {
+        return {
+          ...actions,
+          [actionName]: {
+            ...Object.fromEntries(
+              Object.entries(actions[actionName]).filter(
+                ([key]) => key !== queryToString(query)
+              )
+            ),
+          },
+        };
+      });
+    }
     if (type === PENDING) {
       return set(path, state, (actions: any) => ({
         ...actions,
@@ -101,6 +116,10 @@ const createApiStoreAction = (
     REJECTED,
   };
   const creators = {
+    remove: (query: any) => ({
+      type: REMOVE,
+      payload: { query },
+    }),
     pending: (query: any) => ({
       type: PENDING,
       payload: { query },
