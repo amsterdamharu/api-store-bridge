@@ -22,6 +22,15 @@ export {
   addCartLineReducer,
   actions as cartActions,
 } from './activeCart';
+export {
+  myOrderThunk,
+  myOrderCreateSelectResult,
+  myOrderCartReducer,
+  orderFromCartCreateSelectResult,
+  orderFromCartThunk,
+  orderFromCartReducer,
+  actions as myOrderActions,
+} from './myOrders';
 export const reducers = [
   productsReducer,
   activeCartReducer,

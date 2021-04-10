@@ -7,6 +7,7 @@ import {
   selectProductQuery,
 } from './commercetools';
 import Product from './components/Product';
+import Checkout from './components/Checkout';
 function App() {
   const dispatch = useDispatch();
   const query: any = useSelector(selectProductQuery);
@@ -20,13 +21,16 @@ function App() {
   const productResult = useSelector(selectProducts);
   return (
     <div>
-      <ul>
-        {(productResult.resolved?.items || []).map(
-          (product: any) => (
-            <Product key={product.id} product={product} />
-          )
-        )}
-      </ul>
+      <div><Checkout /></div>
+      <div>
+        <ul>
+          {(productResult.resolved?.items || []).map(
+            (product: any) => (
+              <Product key={product.id} product={product} />
+            )
+          )}
+        </ul>
+      </div>
     </div>
   );
 }

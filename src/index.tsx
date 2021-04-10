@@ -19,6 +19,7 @@ const initialState = {
   data: {
     products: EMPTY_DATA,
     cart: EMPTY_DATA,
+    orders: EMPTY_DATA
   },
   preferences: {
     country: 'US',

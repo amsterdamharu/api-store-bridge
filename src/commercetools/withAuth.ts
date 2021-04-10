@@ -8,7 +8,7 @@ const withAuth = (fn: any) => (
       ...(config.headers || []),
       [
         'authorization',
-        'Bearer EOea_uRwUdVry5ImbfdXd14zgNt-elaC',
+        'Bearer WlKI1iuHY1RSaT9a4MxR1LIk6bEzIK7I',
       ],
     ],
   });

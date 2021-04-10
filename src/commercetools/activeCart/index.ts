@@ -9,7 +9,7 @@ const bridge = createBridge({
   path: ['data', 'cart'],
   entityName: 'cart',
   fetch: fetchJson,
-  createFetchArgs: (query) => {
+  createFetchArgs: () => {
     return [
       `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/active-cart`,
       { headers: [] },
@@ -103,6 +103,8 @@ const createSetDataOnUpdate = (
   }
   return newState;
 };
+//@todo create action to set shipping address:
+//   https://docs.commercetools.com/api/projects/carts#set-shipping-address
 export const activeCartThunk = thunk;
 export const activeCartCreateSelectResult = createSelectResult;
 export const activeCartReducer = reducer;
