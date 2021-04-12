@@ -63,12 +63,26 @@ const createBridge = ({
   const PENDING = `${entityName.toUpperCase()}_PENDING`;
   const FULFILLED = `${entityName.toUpperCase()}_FULFILLED`;
   const REJECTED = `${entityName.toUpperCase()}_REJECTED`;
+  const REMOVE = `${entityName.toUpperCase()}_REMOVE`;
   const reducer = (
     state: any,
     { type, payload = {} }: { type: string; payload?: any }
   ) => {
     const { query = {} } = payload;
     const id = getId(query);
+    if (type === REMOVE && id) {
+      return set(
+        path.concat('data'),
+        state,
+        (data: any) => {
+          return Object.fromEntries(
+            Object.entries(data).filter(
+              ([key]) => key !== String(id)
+            )
+          );
+        }
+      );
+    }
     if (type === PENDING && id) {
       return set(
         path.concat('data'),
@@ -164,8 +178,13 @@ const createBridge = ({
     PENDING,
     FULFILLED,
     REJECTED,
+    REMOVE,
   };
   const creators = {
+    remove: (query: any) => ({
+      type: REMOVE,
+      payload: { query },
+    }),
     pending: (query: any) => ({
       type: PENDING,
       payload: { query },

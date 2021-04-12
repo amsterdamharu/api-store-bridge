@@ -1,3 +1,5 @@
+//@todo: use actual auth to set token and get it from localstorage
+//  use refresh token if available
 const withAuth = (fn: any) => (
   url: string,
   config: any = {}

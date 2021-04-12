@@ -10,6 +10,7 @@ import {
 } from 'redux';
 import { reducers } from './commercetools';
 import { Provider } from 'react-redux';
+import { REMOVE_CART_DATA } from './actions';
 const EMPTY_DATA = {
   data: {},
   queries: {},
@@ -25,9 +26,28 @@ const initialState = {
     country: 'US',
     locale: 'en',
     currency: 'USD',
+    shippingAddress: {
+      additionalStreetInfo: "a",
+      city: "a",
+      country: "US",
+      email: "a@b.com",
+      firstName: "a",
+      lastName: "a",
+      postalCode: "a",
+      streetName: "a"
+    }
   },
 };
 const rootReducer = (state: any, action: any) => {
+  if (action.type === REMOVE_CART_DATA) {
+    return {
+      ...state,
+      data: {
+        ...state.data,
+        cart: EMPTY_DATA
+      }
+    }
+  }
   return reducers.reduce(
     (state, reducer) => reducer(state, action),
     state

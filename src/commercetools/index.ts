@@ -17,7 +17,7 @@ export {
   createCartThunk,
   createCartCreateSelectResult,
   createCartReducer,
-  addCartLineThunk,
+  cartActionThunk,
   addCartLineCreateSelect,
   addCartLineReducer,
   actions as cartActions,

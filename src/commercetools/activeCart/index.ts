@@ -46,10 +46,10 @@ const {
   getMetaFromApiResult: () => null,
 });
 const {
-  thunk: addLineThunk,
-  createSelectResult: addLineCreateSelect,
-  reducer: addLineReducer,
-  actions: addLineActions,
+  thunk: rawCartActionThunk,
+  createSelectResult: rawCartActionCreateSelect,
+  reducer: rawReducer,
+  actions: rawCartActions,
 } = createApiStoreAction(bridge, {
   actionName: 'addLine',
   fetch: fetchJson,
@@ -60,23 +60,39 @@ const {
       productId,
       variantId,
       quantity = 1,
+      shippingAddress,
     } = query;
+    let body;
+    if (productId && variantId && quantity) {
+      body = JSON.stringify({
+        version,
+        actions: [
+          {
+            action: 'addLineItem',
+            productId,
+            variantId,
+            quantity,
+          },
+        ],
+      });
+    }
+    if (shippingAddress) {
+      body = JSON.stringify({
+        version,
+        actions: [
+          {
+            action: 'setShippingAddress',
+            address: shippingAddress,
+          },
+        ],
+      });
+    }
     return [
       `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/carts/${cartId}`,
       {
         headers: [],
         method: 'POST',
-        body: JSON.stringify({
-          version,
-          actions: [
-            {
-              action: 'addLineItem',
-              productId,
-              variantId,
-              quantity,
-            },
-          ],
-        }),
+        body,
       },
     ];
   },
@@ -103,8 +119,6 @@ const createSetDataOnUpdate = (
   }
   return newState;
 };
-//@todo create action to set shipping address:
-//   https://docs.commercetools.com/api/projects/carts#set-shipping-address
 export const activeCartThunk = thunk;
 export const activeCartCreateSelectResult = createSelectResult;
 export const activeCartReducer = reducer;
@@ -129,7 +143,7 @@ export const createCartReducer = createSetDataOnUpdate(
   createActions.types.FULFILLED,
   createReducer
 );
-export const addCartLineThunk = (query: any) => (
+export const cartActionThunk = (query: any) => (
   dispatch: any,
   getState: any
 ) => {
@@ -137,43 +151,37 @@ export const addCartLineThunk = (query: any) => (
     () => {
       return promiseResults(
         activeCartCreateSelectResult(query)(getState())
-      )
-        .then(
-          ([cart]: any[]) => {
-            const newQuery = {
-              ...query,
-              cartId: cart.id,
-              version: cart.version,
-            };
-            return addLineThunk(newQuery)(
-              dispatch,
-              getState
-            ).then(() => newQuery);
-          },
-          () => {
-            //cart does not exist
-            return createCartThunk(
-              selectPreferences(getState())
-            )(dispatch, getState).then(() =>
-              addCartLineThunk(query)(dispatch, getState)
-            );
-          }
-        )
-        .then((query) => {
-          return dispatch(
-            addLineActions.creators.remove(query)
+      ).then(
+        ([cart]: any[]) => {
+          const newQuery = {
+            ...query,
+            cartId: cart.id,
+            version: cart.version,
+          };
+          return rawCartActionThunk(newQuery)(
+            dispatch,
+            getState
+          ).then(({ payload }: any) => payload);
+        },
+        () => {
+          //cart does not exist
+          return createCartThunk(
+            selectPreferences(getState())
+          )(dispatch, getState).then(() =>
+            cartActionThunk(query)(dispatch, getState)
           );
-        });
+        }
+      );
     }
   );
 };
-export const addCartLineCreateSelect = addLineCreateSelect;
+export const addCartLineCreateSelect = rawCartActionCreateSelect;
 export const addCartLineReducer = createSetDataOnUpdate(
-  addLineActions.types.FULFILLED,
-  addLineReducer
+  rawCartActions.types.FULFILLED,
+  rawReducer
 );
 export const actions = {
   get: bridge.actions,
   crate: createActions,
-  addLine: addLineActions,
+  actions: rawCartActions,
 };
