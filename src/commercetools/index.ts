@@ -4,6 +4,7 @@ import {
   addCartLineReducer,
 } from './activeCart';
 import { productsReducer } from './products';
+import { channelsReducer } from './channels';
 export {
   productsThunk,
   productsReducer,
@@ -31,10 +32,17 @@ export {
   orderFromCartReducer,
   actions as myOrderActions,
 } from './myOrders';
+export {
+  channelsThunk,
+  channelsCreateSelectResult,
+  channelsReducer,
+  actions as channelActions,
+} from './channels';
 export const reducers = [
   productsReducer,
   activeCartReducer,
   createCartReducer,
   addCartLineReducer,
+  channelsReducer,
 ];
 export { selectPreferences } from './selectors';

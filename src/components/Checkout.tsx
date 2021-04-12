@@ -11,13 +11,17 @@ import {
   activeCartThunk,
   cartActionThunk,
   cartActions,
+  channelsThunk,
 } from '../commercetools';
 import { selectShippingAddress } from '../commercetools/selectors';
 function Checkout() {
-  //@todo: get a list of channels to select for shippingAddress
-
-  //@todo: stick this in a custom hook
   const dispatch = useDispatch();
+  //@todo: render list of channels with button to set address
+  //  for shipping address (own component)
+  useEffect(
+    () => { dispatch(channelsThunk({})) }, [dispatch]
+  )
+  //@todo: stick this in a custom hook
   const selectActiveCart = useMemo(
     () => activeCartCreateSelectResult({}),
     []
