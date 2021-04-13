@@ -1,4 +1,8 @@
 //@todo: using fetch here will break ssr, need to import from somewhere
+//@todo: tokens should be stored in redux
+//   with ssr token should be sent by client
+//   if not sent then created by server but
+//   saved on client for session
 import { encode } from 'js-base64';
 import {
   createGroup,
@@ -66,9 +70,9 @@ const refreshOrCreateToken = group(() => {
   return getTokenFromRefreshToken().catch(() => getToken());
 });
 const withAuth = (fn: any) => {
-  const token = localStorage.getItem('accessToken');
   return (url: string, config: any = {}) => {
     function doRequest() {
+      const token = localStorage.getItem('accessToken');
       return fn(url, {
         ...config,
         headers: [
