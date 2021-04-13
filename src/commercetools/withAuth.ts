@@ -1,4 +1,8 @@
 import { encode } from 'js-base64';
+import {
+  createGroup,
+  createPromiseSessionCache,
+} from './group';
 const createAuth = () =>
   encode(
     `${process.env.REACT_APP_CLIENT_ID}:${process.env.REACT_APP_CLIENT_SECRET}`
@@ -54,9 +58,12 @@ const getTokenFromRefreshToken = () => {
   }
   return getToken();
 };
-const refreshOrCreateToken = () => {
+const group = createGroup(createPromiseSessionCache());
+//this function is grouped so all request will use this one
+//  cache only for the duration of all async calls to finish
+const refreshOrCreateToken = group(() => {
   return getTokenFromRefreshToken().catch(() => getToken());
-};
+});
 const withAuth = (fn: any) => {
   const token = localStorage.getItem('accessToken');
   return (url: string, config: any = {}) => {
