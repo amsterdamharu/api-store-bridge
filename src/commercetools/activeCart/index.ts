@@ -55,7 +55,7 @@ const {
   reducer: rawReducer,
   actions: rawCartActions,
 } = createApiStoreAction(bridge, {
-  actionName: 'addLine',
+  actionName: 'cartAction',
   fetch: fetchJson,
   createFetchArgs: (query: any) => {
     const {
@@ -179,8 +179,8 @@ export const cartActionThunk = (query: any) => (
     }
   );
 };
-export const addCartLineCreateSelect = rawCartActionCreateSelect;
-export const addCartLineReducer = createSetDataOnUpdate(
+export const cartActionCreateSelect = rawCartActionCreateSelect;
+export const cartActionReducer = createSetDataOnUpdate(
   rawCartActions.types.FULFILLED,
   rawReducer
 );

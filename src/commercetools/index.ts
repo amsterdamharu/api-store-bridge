@@ -1,7 +1,7 @@
 import {
   activeCartReducer,
   createCartReducer,
-  addCartLineReducer,
+  cartActionReducer,
 } from './activeCart';
 import { productsReducer } from './products';
 import { channelsReducer } from './channels';
@@ -19,8 +19,8 @@ export {
   createCartCreateSelectResult,
   createCartReducer,
   cartActionThunk,
-  addCartLineCreateSelect,
-  addCartLineReducer,
+  cartActionCreateSelect as addCartLineCreateSelect,
+  cartActionReducer as addCartLineReducer,
   actions as cartActions,
 } from './activeCart';
 export {
@@ -50,6 +50,6 @@ export const reducers = [
   productsReducer,
   activeCartReducer,
   createCartReducer,
-  addCartLineReducer,
+  cartActionReducer,
   channelsReducer,
 ];
