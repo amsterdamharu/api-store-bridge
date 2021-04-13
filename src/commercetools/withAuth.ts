@@ -1,3 +1,4 @@
+//@todo: using fetch here will break ssr, need to import from somewhere
 import { encode } from 'js-base64';
 import {
   createGroup,

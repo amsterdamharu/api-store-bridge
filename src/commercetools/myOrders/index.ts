@@ -20,6 +20,7 @@ const bridge = createBridge({
     result.data.results,
   getMetaFromApiResult: (result: any) => result.data.total,
 });
+//@todo: if rejected it still removes cart, do not do this
 const {
   thunk: createThunk,
   createSelectResult: createCreateSelectResult,
