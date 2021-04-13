@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import Product from './components/Product';
 import Checkout from './components/Checkout';
-import useProducts from './commercetools/hooks/useProducts';
+import { useProducts } from './commercetools';
 function App() {
   const productResult = useProducts();
   return (

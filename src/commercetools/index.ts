@@ -38,6 +38,14 @@ export {
   channelsReducer,
   actions as channelActions,
 } from './channels';
+export {
+  selectPreferences,
+  selectShippingAddress,
+  selectCountry,
+} from './selectors';
+export { default as useCart } from './hooks/useCart';
+export { default as useChannels } from './hooks/useChannels';
+export { default as useProducts } from './hooks/useProducts';
 export const reducers = [
   productsReducer,
   activeCartReducer,
@@ -45,4 +53,3 @@ export const reducers = [
   addCartLineReducer,
   channelsReducer,
 ];
-export { selectPreferences } from './selectors';

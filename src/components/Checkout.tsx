@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import useCart from '../commercetools/hooks/useCart';
-import useChannels from '../commercetools/hooks/useChannels';
-import { selectCountry } from '../commercetools/selectors';
+import { selectCountry, useCart, useChannels } from '../commercetools';
 import Channel from './Chanel';
 
 function Checkout() {
