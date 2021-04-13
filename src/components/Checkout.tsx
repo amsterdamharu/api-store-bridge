@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import useCart from '../commercetools/hooks/useCart';
 import useChannels from '../commercetools/hooks/useChannels';
+import { selectCountry } from '../commercetools/selectors';
 import Channel from './Chanel';
-const QUERY = { country: "US" }
+
 function Checkout() {
   const { cartResult, checkout } = useCart();
   const { resolved: cart } = cartResult;
-  const channels = useChannels(QUERY)?.resolved?.items
+  const country = useSelector(selectCountry);
+  const query = useMemo(() => ({ country }), [country])
+  const channels = useChannels(query)?.resolved?.items
   return (
     <div>
       <button onClick={checkout} disabled={!cart || !cart?.lineItems?.length}>

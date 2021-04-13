@@ -6,3 +6,7 @@ export const selectShippingAddress = createSelector(
   [selectPreferences],
   (preferences) => preferences.shippingAddress
 );
+export const selectCountry = createSelector(
+  [selectPreferences],
+  (preferences) => preferences.country
+);
