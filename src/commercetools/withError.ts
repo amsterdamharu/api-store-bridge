@@ -3,6 +3,6 @@ const withError = (fn: any) => (
   config: any = {}
 ) =>
   fn(url, config).then((response: any) =>
-    response.ok ? response : Promise.reject('NOPE')
+    response.ok ? response : Promise.reject(response)
   );
 export default withError;
