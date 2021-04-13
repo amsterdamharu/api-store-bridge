@@ -145,8 +145,10 @@ const createApiStoreAction = (
     return fetch(...createFetchArgs(query)).then(
       (resolve: any) =>
         dispatch(creators.fulfilled(query, resolve)),
-      (error: any) =>
-        dispatch(creators.rejected(query, error))
+      (error: any) => {
+        dispatch(creators.rejected(query, error));
+        return Promise.reject(error);
+      }
     );
   };
 
