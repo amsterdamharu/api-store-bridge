@@ -8,7 +8,7 @@ import {
   cartActionThunk,
   cartActions,
 } from '../../commercetools';
-import { selectShippingAddress } from '../../commercetools/selectors';
+import { selectShippingAddress } from '../selectors';
 export default function useCart() {
   const dispatch = useDispatch();
   const selectActiveCart = useMemo(
