@@ -1,18 +1,8 @@
 import React, {
   useCallback,
-  useEffect,
-  useMemo,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { removeCartData, setShippingAddress } from '../actions';
-import {
-  activeCartCreateSelectResult,
-  orderFromCartThunk,
-  activeCartThunk,
-  cartActionThunk,
-  cartActions,
-  channelsThunk,
-} from '../commercetools';
+import { useDispatch } from 'react-redux';
+import { setShippingAddress } from '../actions';
 function Channel({ channel }: any) {
   const dispatch = useDispatch();
   const setShipping = useCallback(() => {

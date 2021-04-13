@@ -42,8 +42,20 @@ export default function useCart() {
         () => dispatch(removeCartData())
       );
   }, [shippingAddress, dispatch]);
+  const addToCart = useCallback(
+    (productId, variantId) => {
+      const query = {
+        productId,
+        variantId,
+      };
+      dispatch(cartActionThunk(query));
+    },
+    [dispatch]
+  );
+
   return {
     checkout,
     cartResult,
+    addToCart,
   };
 }

@@ -2,13 +2,17 @@ import createApiStoreAction from '../../data/apiStoreAction';
 import createBridge from '../../data/apiStoreBridge';
 import { promiseResults } from '../../data/result';
 import fetchJson from '../fetchJson';
+import {
+  createGroup,
+  createPromiseSessionCache,
+} from '../group';
 import { selectPreferences } from '../selectors';
-
+const group = createGroup(createPromiseSessionCache());
 const bridge = createBridge({
   getId: () => 'active',
   path: ['data', 'cart'],
   entityName: 'cart',
-  fetch: fetchJson,
+  fetch: group(fetchJson),
   createFetchArgs: () => {
     return [
       `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/active-cart`,

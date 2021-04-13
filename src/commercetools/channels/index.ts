@@ -6,11 +6,17 @@ const bridge = createBridge({
   path: ['data', 'channels'],
   entityName: 'channels',
   fetch: fetchJson,
-  createFetchArgs: (query) => {
-    return [
-      `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/channels`,
-      { headers: [] },
-    ];
+  createFetchArgs: (query: any) => {
+    const url = new URL(
+      `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/channels/`
+    );
+    if (query?.country) {
+      url.searchParams.append(
+        'where',
+        `address(country="${query.country}")`
+      );
+    }
+    return [url, { headers: [] }];
   },
   getDataFromApiResult: (result: any) =>
     result.data.results,

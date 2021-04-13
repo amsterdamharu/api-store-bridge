@@ -1,26 +1,12 @@
-import React, {
-  useEffect,
-  useMemo,
-} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  channelsThunk,
-  channelsCreateSelectResult,
-} from '../commercetools';
+import React from 'react';
 import useCart from '../commercetools/hooks/useCart';
+import useChannels from '../commercetools/hooks/useChannels';
 import Channel from './Chanel';
+const QUERY = { country: "US" }
 function Checkout() {
   const { cartResult, checkout } = useCart();
-  const dispatch = useDispatch();
-  useEffect(
-    () => { dispatch(channelsThunk({})) }, [dispatch]
-  );
-  const selectChannels = useMemo(
-    () => channelsCreateSelectResult({}), []
-  )
-  const { resolved: ch } = useSelector(selectChannels);
-  const channels = ch?.items;
   const { resolved: cart } = cartResult;
+  const channels = useChannels(QUERY)?.resolved?.items
   return (
     <div>
       <button onClick={checkout} disabled={!cart || !cart?.lineItems?.length}>

@@ -1,27 +1,15 @@
-import React, { useEffect, useMemo } from 'react';
+import React from 'react';
 import './App.css';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  productsCreateSelectResult,
-  productsThunk,
-  selectProductQuery,
-} from './commercetools';
 import Product from './components/Product';
 import Checkout from './components/Checkout';
+import useProducts from './commercetools/hooks/useProducts';
 function App() {
-  const dispatch = useDispatch();
-  const query: any = useSelector(selectProductQuery);
-  useEffect(() => {
-    dispatch(productsThunk(query));
-  }, [dispatch, query]);
-  const selectProducts = useMemo(
-    () => productsCreateSelectResult(query),
-    [query]
-  );
-  const productResult = useSelector(selectProducts);
+  const productResult = useProducts();
   return (
     <div>
-      <div><Checkout /></div>
+      <div>
+        <Checkout />
+      </div>
       <div>
         <ul>
           {(productResult.resolved?.items || []).map(

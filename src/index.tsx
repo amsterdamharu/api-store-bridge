@@ -69,6 +69,7 @@ const store = createStore(
   initialState,
   composeEnhancers(
     applyMiddleware(
+      //simple thunk middleware
       ({ dispatch, getState }) => (next) => (action) =>
         typeof action === 'function'
           ? action(dispatch, getState)
