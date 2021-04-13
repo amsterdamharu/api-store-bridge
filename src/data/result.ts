@@ -23,7 +23,7 @@ export type Result<T> = {
   resolved: T;
 };
 export const isResult = (val: any = {}) =>
-  ["pending", "created", "rejected"].reduce(
+  ['pending', 'created', 'rejected'].reduce(
     (result, key) => result && val.hasOwnProperty(key),
     true
   );
