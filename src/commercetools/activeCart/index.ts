@@ -6,6 +6,7 @@ import {
   createGroup,
   createPromiseSessionCache,
 } from '../group';
+import makeUrl from '../makeUrl';
 import { selectPreferences } from '../selectors';
 const group = createGroup(createPromiseSessionCache());
 const bridge = createBridge({
@@ -14,10 +15,7 @@ const bridge = createBridge({
   entityName: 'cart',
   fetch: group(fetchJson),
   createFetchArgs: () => {
-    return [
-      `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/active-cart`,
-      { headers: [] },
-    ];
+    return [makeUrl('me/active-cart'), { headers: [] }];
   },
   getDataFromApiResult: (result: any) =>
     result.data.results,
@@ -33,7 +31,7 @@ const {
   fetch: fetchJson,
   createFetchArgs: (query: any) => {
     return [
-      `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/carts`,
+      makeUrl('me/carts'),
       {
         headers: [],
         method: 'POST',
@@ -92,7 +90,7 @@ const {
       });
     }
     return [
-      `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/carts/${cartId}`,
+      makeUrl(`me/carts/${cartId}`),
       {
         headers: [],
         method: 'POST',

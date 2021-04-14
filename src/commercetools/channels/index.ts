@@ -1,5 +1,6 @@
 import createBridge from '../../data/apiStoreBridge';
 import fetchJson from '../fetchJson';
+import makeUrl from '../makeUrl';
 
 const bridge = createBridge({
   getId: ({ id }) => id,
@@ -7,9 +8,7 @@ const bridge = createBridge({
   entityName: 'channels',
   fetch: fetchJson,
   createFetchArgs: (query: any) => {
-    const url = new URL(
-      `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/channels/`
-    );
+    const url = makeUrl('channels/');
     if (query?.country) {
       url.searchParams.append(
         'where',

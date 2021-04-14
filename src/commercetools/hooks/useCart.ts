@@ -37,10 +37,7 @@ export default function useCart() {
           })
         );
       })
-      .then(
-        //@todo: why this resolves when it fails?
-        () => dispatch(removeCartData())
-      );
+      .then(() => dispatch(removeCartData()));
   }, [shippingAddress, dispatch]);
   const addToCart = useCallback(
     (productId, variantId) => {

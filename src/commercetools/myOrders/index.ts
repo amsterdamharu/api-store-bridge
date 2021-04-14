@@ -1,6 +1,7 @@
 import createApiStoreAction from '../../data/apiStoreAction';
 import createBridge from '../../data/apiStoreBridge';
 import fetchJson from '../fetchJson';
+import makeUrl from '../makeUrl';
 
 const bridge = createBridge({
   getId: ({ id }) => id,
@@ -10,9 +11,7 @@ const bridge = createBridge({
   createFetchArgs: (query) => {
     const { id }: any = query;
     return [
-      `https://api.europe-west1.gcp.commercetools.com/${
-        process.env.REACT_APP_PROJECT_KEY
-      }/me/orders/${id || ''}`,
+      makeUrl(`/me/orders/${id || ''}`),
       { headers: [] },
     ];
   },
@@ -20,7 +19,6 @@ const bridge = createBridge({
     result.data.results,
   getMetaFromApiResult: (result: any) => result.data.total,
 });
-//@todo: if rejected it still removes cart, do not do this
 const {
   thunk: createThunk,
   createSelectResult: createCreateSelectResult,
@@ -32,7 +30,7 @@ const {
   createFetchArgs: (query: any) => {
     const { cartId, cartVersion } = query;
     return [
-      `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/me/orders`,
+      makeUrl('me/orders'),
       {
         headers: [],
         method: 'POST',

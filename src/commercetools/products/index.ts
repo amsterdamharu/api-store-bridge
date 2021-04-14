@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect';
 import createBridge from '../../data/apiStoreBridge';
 import fetchJson from '../fetchJson';
+import makeUrl from '../makeUrl';
 import { selectPreferences } from '../selectors';
 
 const { thunk, createSelectResult, reducer } = createBridge(
@@ -10,12 +11,9 @@ const { thunk, createSelectResult, reducer } = createBridge(
     entityName: 'products',
     fetch: fetchJson,
     createFetchArgs: (query: any) => {
-      //@todo: build url in external function
-      const url = new URL(
-        `https://api.europe-west1.gcp.commercetools.com/${process.env.REACT_APP_PROJECT_KEY}/product-projections/search?priceCurrency=USD&priceCountry=US&limit=2&offset=0`
-      );
+      const url = makeUrl('product-projections/search');
+      url.searchParams.append('limit', '2');
       if (query.page) {
-        url.searchParams.append('limit', '1');
         url.searchParams.append('offset', query.page);
       }
       if (query.country) {
