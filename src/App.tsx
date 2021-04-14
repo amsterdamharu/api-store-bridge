@@ -1,25 +1,27 @@
 import React from 'react';
 import './App.css';
-import Product from './components/Product';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+} from "react-router-dom";
+import Products from './components/Products';
 import Checkout from './components/Checkout';
-import { useProducts } from './commercetools';
+import Layout from './components/Layout';
 function App() {
-  const productResult = useProducts();
   return (
-    <div>
-      <div>
-        <Checkout />
-      </div>
-      <div>
-        <ul>
-          {(productResult.resolved?.items || []).map(
-            (product: any) => (
-              <Product key={product.id} product={product} />
-            )
-          )}
-        </ul>
-      </div>
-    </div>
+    <Router>
+      <Switch>
+        <Route path="/" exact={true}>
+          <Layout content={Products} />
+        </Route>
+        <Route path="/checkout">
+          <Layout content={Checkout} />
+        </Route>
+      </Switch>
+    </Router>
+
+
   );
 }
 
