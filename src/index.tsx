@@ -1,8 +1,6 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 import {
   applyMiddleware,
   compose,
@@ -10,7 +8,11 @@ import {
 } from 'redux';
 import { reducers } from './commercetools';
 import { Provider } from 'react-redux';
-import { REMOVE_CART_DATA, SET_SHIPPING_ADDRESS } from './actions';
+import {
+  REMOVE_CART_DATA,
+  SET_SHIPPING_ADDRESS,
+  SET_CHANNEL,
+} from './actions';
 const EMPTY_DATA = {
   data: {},
   queries: {},
@@ -21,22 +23,23 @@ const initialState = {
     products: EMPTY_DATA,
     cart: EMPTY_DATA,
     orders: EMPTY_DATA,
-    channels: EMPTY_DATA
+    channels: EMPTY_DATA,
   },
   preferences: {
     country: 'US',
     locale: 'en',
     currency: 'USD',
+    channel: EMPTY_DATA,
     shippingAddress: {
-      additionalStreetInfo: "a",
-      city: "a",
-      country: "US",
-      email: "a@b.com",
-      firstName: "a",
-      lastName: "a",
-      postalCode: "a",
-      streetName: "a"
-    }
+      additionalStreetInfo: 'a',
+      city: 'a',
+      country: 'US',
+      email: 'a@b.com',
+      firstName: 'a',
+      lastName: 'a',
+      postalCode: 'a',
+      streetName: 'a',
+    },
   },
 };
 const rootReducer = (state: any, action: any) => {
@@ -45,15 +48,27 @@ const rootReducer = (state: any, action: any) => {
       ...state,
       data: {
         ...state.data,
-        cart: EMPTY_DATA
-      }
-    }
+        cart: EMPTY_DATA,
+      },
+    };
   }
   if (action.type === SET_SHIPPING_ADDRESS) {
     return {
       ...state,
-      preferences: { ...state.preferences, shippingAddress: action.payload }
-    }
+      preferences: {
+        ...state.preferences,
+        shippingAddress: action.payload,
+      },
+    };
+  }
+  if (action.type === SET_CHANNEL) {
+    return {
+      ...state,
+      preferences: {
+        ...state.preferences,
+        channel: action.payload,
+      },
+    };
   }
   return reducers.reduce(
     (state, reducer) => reducer(state, action),
@@ -84,8 +99,3 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root')
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

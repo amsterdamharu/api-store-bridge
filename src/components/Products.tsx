@@ -6,14 +6,16 @@ function Products() {
 
   return (
     <div>
-      <ul>
+      <h1 className="title">Products</h1>
+      <ul className="product-list">
         {(productResult.resolved?.items || []).map(
           (product: any) => (
             <Product key={product.id} product={product} />
           )
         )}
       </ul>
-    </div>)
+    </div>
+  );
 }
 
-export default React.memo(Products)
+export default React.memo(Products);

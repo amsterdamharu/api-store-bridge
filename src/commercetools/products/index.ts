@@ -12,7 +12,7 @@ const { thunk, createSelectResult, reducer } = createBridge(
     fetch: fetchJson,
     createFetchArgs: (query: any) => {
       const url = makeUrl('product-projections/search');
-      url.searchParams.append('limit', '2');
+      url.searchParams.append('limit', '30');
       if (query.page) {
         url.searchParams.append('offset', query.page);
       }

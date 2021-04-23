@@ -1,27 +1,26 @@
-import React from 'react';
 import './App.css';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-} from "react-router-dom";
+} from 'react-router-dom';
 import Products from './components/Products';
 import Checkout from './components/Checkout';
-import Layout from './components/Layout';
+import Header from './components/Header';
+
 function App() {
   return (
     <Router>
+      <Header />
       <Switch>
         <Route path="/" exact={true}>
-          <Layout content={Products} />
+          <Products />
         </Route>
         <Route path="/checkout">
-          <Layout content={Checkout} />
+          <Checkout />
         </Route>
       </Switch>
     </Router>
-
-
   );
 }
 
