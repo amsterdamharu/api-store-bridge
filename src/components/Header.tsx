@@ -1,9 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../commercetools';
 import { MdShoppingCart } from 'react-icons/md';
 
 function Header() {
-  const location = useLocation();
   const { cartResult } = useCart();
   const { resolved: cart } = cartResult;
   return (
