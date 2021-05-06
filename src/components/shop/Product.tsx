@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useCart } from '../commercetools';
+import { useCart } from '../../commercetools';
 
 function Product({ product }: any) {
   const { addToCart } = useCart();

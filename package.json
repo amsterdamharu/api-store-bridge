@@ -17,6 +17,7 @@
     "react-redux": "^7.2.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.1",
+    "react-select": "^4.3.0",
     "react-tabs": "^3.2.2",
     "redux": "^4.0.5",
     "reselect": "^4.0.0",
@@ -48,6 +49,7 @@
     ]
   },
   "devDependencies": {
-    "@types/react-router-dom": "^5.1.7"
+    "@types/react-router-dom": "^5.1.7",
+    "@types/react-select": "^4.0.15"
   }
 }

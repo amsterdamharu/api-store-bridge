@@ -4,10 +4,10 @@ function CartItems({ cart }: any) {
       <table className="cart-items-table">
         <thead>
           <tr>
-            <th>Items</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Total</th>
+            <th>PRODUCTS</th>
+            <th>QTY</th>
+            <th>PRICE</th>
+            <th>TOTAL</th>
           </tr>
         </thead>
         <tbody>
@@ -26,21 +26,27 @@ function CartItems({ cart }: any) {
               <td>{item.quantity}</td>
               <td>
                 <div className="cart-item-price">
-                  ${item.price.value.centAmount / 100}
+                  $
+                  {item?.price?.discounted?.value
+                    ? item?.price?.discounted?.value
+                        .centAmount / 100
+                    : item.price.value.centAmount / 100}
                 </div>
               </td>
               <td>
                 $
-                {(item.price.value.centAmount / 100) *
-                  item.quantity}
+                {item.price.discounted?.value
+                  ? (item.price?.discounted?.value
+                      .centAmount /
+                      100) *
+                    item.quantity
+                  : (item.price.value.centAmount / 100) *
+                    item.quantity}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="cart-price">
-        ${cart.totalPrice.centAmount / 100}
-      </div>
     </div>
   );
 }

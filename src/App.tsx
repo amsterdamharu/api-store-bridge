@@ -4,8 +4,8 @@ import {
   Switch,
   Route,
 } from 'react-router-dom';
-import Products from './components/Products';
-import Checkout from './components/Checkout';
+import Products from './components/shop/Products';
+import CartPage from './components/cart/Cart';
 import Header from './components/Header';
 
 function App() {
@@ -16,8 +16,8 @@ function App() {
         <Route path="/" exact={true}>
           <Products />
         </Route>
-        <Route path="/checkout">
-          <Checkout />
+        <Route path="/cart">
+          <CartPage />
         </Route>
       </Switch>
     </Router>

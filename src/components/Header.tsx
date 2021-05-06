@@ -7,17 +7,16 @@ function Header() {
   const { resolved: cart } = cartResult;
   return (
     <div className="header">
-      <div className="header-link"></div>
       <Link className="header-link" to="/">
-        SHOP
+        HOME
       </Link>
       <Link
         className="cart-btn-container header-link"
-        to="/checkout"
+        to="/cart"
       >
         <MdShoppingCart size="30px" />
         <div className="cart-badge">
-          {cart?.lineItems?.length}
+          {cart?.lineItems?.length || 0}
         </div>
       </Link>
     </div>

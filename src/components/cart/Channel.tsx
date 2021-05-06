@@ -1,7 +1,10 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setShippingAddress, setChannel } from '../actions';
-import { selectChannel } from '../commercetools/selectors';
+import {
+  setShippingAddress,
+  setChannel,
+} from '../../actions';
+import { selectChannel } from '../../commercetools/selectors';
 
 function Channel({ channel }: any) {
   const dispatch = useDispatch();

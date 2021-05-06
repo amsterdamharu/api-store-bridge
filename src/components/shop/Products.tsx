@@ -1,12 +1,14 @@
 import React from 'react';
-import { useProducts } from '../commercetools';
+import { useProducts } from '../../commercetools';
 import Product from './Product';
+import './Products.css';
+
 function Products() {
   const productResult = useProducts();
 
   return (
     <div>
-      <h1 className="title">Products</h1>
+      <h1 className="title">PRODUCTS</h1>
       <ul className="product-list">
         {(productResult.resolved?.items || []).map(
           (product: any) => (
