@@ -23,6 +23,27 @@ function CartItems({ cart }: any) {
                   {item.name.en}
                 </div>
               </td>
+              {/* <td>
+                <div className="quantity-input">
+                  <button
+                    className="minus"
+                    onClick={() => item.quantity - 1}
+                  >
+                    &mdash;
+                  </button>
+                  <input
+                    className="number"
+                    type="text"
+                    value={item.quantity}
+                  />
+                  <button
+                    className="plus"
+                    onClick={() => item.quantity + 1}
+                  >
+                    &#xff0b;
+                  </button>
+                </div>
+              </td> */}
               <td>{item.quantity}</td>
               <td>
                 <div className="cart-item-price">

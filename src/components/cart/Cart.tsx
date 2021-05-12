@@ -5,15 +5,23 @@ import { useCart } from '../../commercetools';
 import './Cart.css';
 import PickUpLocation from './PickUpLocation';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { selectChannel } from '../../commercetools/selectors';
 
 export default function CartPage() {
   const [orderComplete, setOrderComplete] = useState(false);
+  const [channelError, setChannelError] = useState(false);
   const { cartResult, checkout } = useCart();
   const { resolved: cart } = cartResult;
+  const selectedChannel = useSelector(selectChannel);
 
   const completeCheckout = () => {
-    checkout();
-    setOrderComplete(true);
+    if (typeof selectedChannel === 'string') {
+      checkout();
+      setOrderComplete(true);
+    } else {
+      setChannelError(true);
+    }
   };
 
   return (
@@ -26,7 +34,10 @@ export default function CartPage() {
               <CartItems cart={cart} />
 
               <div className="right-side">
-                <PickUpLocation />
+                <PickUpLocation
+                  channelError={channelError}
+                />
+
                 <div className="order-summary">
                   <h3>ORDER SUMMARY</h3>
                   <div className="summary-line">

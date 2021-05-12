@@ -37,7 +37,8 @@ const { thunk, createSelectResult, reducer } = createBridge(
   }
 );
 export const productsThunk = thunk;
-export const productsCreateSelectResult = createSelectResult;
+export const productsCreateSelectResult =
+  createSelectResult;
 export const productsReducer = reducer;
 export const selectProductQuery = createSelector(
   [selectPreferences],

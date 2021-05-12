@@ -9,13 +9,15 @@ function Products() {
   return (
     <div>
       <h1 className="title">PRODUCTS</h1>
-      <ul className="product-list">
-        {(productResult.resolved?.items || []).map(
-          (product: any) => (
-            <Product key={product.id} product={product} />
-          )
-        )}
-      </ul>
+      <div className="shop-content">
+        <ul className="product-list">
+          {(productResult.resolved?.items || []).map(
+            (product: any) => (
+              <Product key={product.id} product={product} />
+            )
+          )}
+        </ul>
+      </div>
     </div>
   );
 }

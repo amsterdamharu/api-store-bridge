@@ -10,11 +10,12 @@ import {
 } from '../../actions';
 import { selectChannel } from '../../commercetools/selectors';
 
-export default function PickUpLocation() {
+export default function PickUpLocation({
+  channelError,
+}: any) {
   const selectedChannel = useSelector(selectChannel);
-  const [channelState, setChannelState] = useState(
-    selectedChannel
-  );
+  const [channelState, setChannelState] =
+    useState(selectedChannel);
   const country = useSelector(selectCountry);
   const query = useMemo(() => ({ country }), [country]);
   const channels = useChannels(query)?.resolved?.items;
@@ -42,25 +43,42 @@ export default function PickUpLocation() {
   return (
     <div>
       {channels && (
-        <div className="locations-section">
-          <label htmlFor="location">
-            Select a pick-up location
-          </label>
+        <div>
+          <div className="locations-section">
+            <label htmlFor="location">
+              Select a pick-up location
+            </label>
 
-          <select
-            name="location"
-            id="location"
-            value={channelState}
-            onChange={(e) => {
-              setChannelState(e.target.value);
-            }}
-          >
-            {channels.map((channel: any) => (
-              <option value={channel.id} key={channel.id}>
-                {channel.name.en}
+            <select
+              className={channelError ? 'error-select' : ''}
+              name="location"
+              id="location"
+              value={channelState}
+              onChange={(e) => {
+                setChannelState(e.target.value);
+              }}
+            >
+              <option hidden>Select...</option>
+              <option defaultChecked disabled>
+                Select...
               </option>
-            ))}
-          </select>
+
+              {channels.map((channel: any) => (
+                <option value={channel.id} key={channel.id}>
+                  {channel.name.en}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="error-wrap">
+            <small
+              className={
+                channelError ? 'channel-error' : 'invisible'
+              }
+            >
+              Please choose pickup location
+            </small>
+          </div>
         </div>
       )}
     </div>
